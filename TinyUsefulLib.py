@@ -319,20 +319,21 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
     # диагонализация
     (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
     
-    if(project):
-        pr = eigVectors
-        H = dagger(pr) @ H @ pr
-    
     order=np.argsort(np.real(eigEnergies))
     eigEnergies=eigEnergies[order]
     eigVectors=eigVectors[:, order]
+    
+    if(project):
+        pr = eigVectors
+        H = tul.dagger(pr) @ H @ pr
     
     # перетягиваем операторы
     if(opers1.shape[0] != 0):
         if(project):
             newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
             for i in range(opers1.shape[0]):
-                newOpers1[i, :, :] = dagger(pr) @ np.kron(opers1[i, :, :], E2) @ pr
+                M = np.kron(opers1[i, :, :], E2)
+                newOpers1[i, :, :] = dagger(pr) @ M @ pr
         
         else:
             newOpers1 = np.zeros((opers1.shape[0], size1*size2, size1*size2), dtype=complex)
@@ -343,7 +344,8 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
         if(project):
             newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
             for i in range(opers2.shape[0]):
-                newOpers1[i, :, :] = dagger(pr) @ np.kron(E1, opers2[i, :, :]) @ pr
+                M = np.kron(E1, opers2[i, :, :])
+                newOpers2[i, :, :] = dagger(pr) @ M @ pr
         
         else:
             newOpers2 = np.zeros((opers2.shape[0], size1*size2, size1*size2), dtype=complex)
@@ -358,6 +360,7 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
         return (eigEnergies, eigVectors, H, newOpers2)
     else:
         return (eigEnergies, eigVectors, H)
+
 
 
 def Graphs(t, X, x='x', y='y', full=False, save=False, filename=''):
