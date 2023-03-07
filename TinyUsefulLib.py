@@ -770,15 +770,14 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         
     # диагонализация
     (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
+        
+    order=np.argsort(np.real(eigEnergies))
+    eigEnergies=eigEnergies[order]
+    eigVectors=eigVectors[:, order]
     
     if(project):
         pr = eigVectors
         H = dagger(pr) @ H @ pr
-        
-    
-    order=np.argsort(np.real(eigEnergies))
-    eigEnergies=eigEnergies[order]
-    eigVectors=eigVectors[:, order]
     
     eigEnergies = eigEnergies - eigEnergies[0]
     
@@ -789,7 +788,8 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         if(project):
             newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
             for i in range(opers1.shape[0]):
-                newOpers1[i, :, :] = dagger(pr)@np.kron(np.kron(opers1[i, :, :], E2), E3)@pr
+                M = np.kron(np.kron(opers1[i, :, :], E2), E3)
+                newOpers1[i, :, :] = dagger(pr) @ M @ pr
             
         else:
             newOpers1 = np.zeros((opers1.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
@@ -802,7 +802,8 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         if(project):
             newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
             for i in range(opers2.shape[0]):
-                newOpers2[i, :, :] = dagger(pr)@np.kron(np.kron(E1, opers2[i, :, :]), E3)@pr
+                M = np.kron(np.kron(E1, opers2[i, :, :]), E3)
+                newOpers2[i, :, :] = dagger(pr) @ M @ pr
                 
         else: 
             newOpers2 = np.zeros((opers2.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
@@ -815,7 +816,8 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         if(project):
             newOpers3 = np.zeros((opers3.shape[0], numOfLvls, numOfLvls), dtype=complex)
             for i in range(opers3.shape[0]):
-                newOpers3[i, :, :] = dagger(pr)@np.kron(np.kron(E1, E2), opers3[i, :, :])@pr
+                M = np.kron(np.kron(E1, E2), opers3[i, :, :])
+                newOpers3[i, :, :] = dagger(pr) @ M @ pr
         else:        
             newOpers3 = np.zeros((opers3.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
             for i in range(opers3.shape[0]):
