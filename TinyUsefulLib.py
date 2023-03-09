@@ -1,5 +1,4 @@
 import tensorflow as tf
-from VirtualQubitSystem import *
 import tqdm
 from numpy import pi,linspace,tensordot
 import scipy.optimize
@@ -479,6 +478,9 @@ def LindbladLin(H, L):
     return M
 
 
+"""
+from VirtualQubitSystem import *
+
 def SchrodingerParamEx(H, V, psiIn, psiTarg, timelist, force, psi_flag=True):
     #решаем Шредингера с гамильтонианом H + V*F(t, a), где a – вектор параметров
     # psiIn, psiTarg – волновые функции-столбцы
@@ -535,7 +537,7 @@ def SchrodingerParamEx(H, V, psiIn, psiTarg, timelist, force, psi_flag=True):
     # сетка t
     model.set_timelist(timelist)
 
-    """
+    
     запускаем дифурорешатель, который выдает:
 
     1) psilist[A, B, C, D]
@@ -549,7 +551,7 @@ def SchrodingerParamEx(H, V, psiIn, psiTarg, timelist, force, psi_flag=True):
         B – индекс узла сетки t
         C – индекс заданных initstate
 
-    """
+    
 
     if(psi_flag):
         # решение с выводом полной волновой функции на сетке t (psilist)
@@ -639,7 +641,7 @@ def LindbladParamEx(H, V, L, psiIn, timelist, force):
     # сетка t
     model.set_timelist(timelist)
 
-    """
+    
     запускаем дифурорешатель, который выдает:
 
     1) psilist[A, B, C, D]
@@ -647,7 +649,7 @@ def LindbladParamEx(H, V, L, psiIn, timelist, force):
         B – индекс узла сетки t
         C – индекс вектор-функции
         D – индекс заданных initstate
-    """
+    
 
     # решение с выводом полной волновой функции на сетке t (psilist)
     _, rolist = model.scan_fidelitySE(force, psi_flag=True, progress_bar=True)
@@ -659,6 +661,7 @@ def LindbladParamEx(H, V, L, psiIn, timelist, force):
     
     return rolistM
 
+"""
 
 def ReverseQuantization(El, Ec, S=0):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
