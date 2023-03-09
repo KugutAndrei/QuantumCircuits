@@ -324,7 +324,7 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
     
     if(project):
         pr = eigVectors
-        H = tul.dagger(pr) @ H @ pr
+        H = dagger(pr) @ H @ pr
     
     # перетягиваем операторы
     if(opers1.shape[0] != 0):
