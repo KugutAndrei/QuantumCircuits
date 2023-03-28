@@ -251,7 +251,7 @@ def Fluxonium(Ej, El, Ec, gridSize=100, numOfLvls=100, leftBorder=-20, rightBord
     return (eigEnergies, phi, q)
 
 
-def Transmon(Ej1, Ej2, Ec, gridSize=100, numOfLvls=100, F=0):
+def Transmon(Ej1, Ej2, Ec, gridSize=100, numOfLvls=100, F=0, Q=0):
     # Ej и Ec - эффективные энергии на джоз. эл. и емкости
 
     # h - шаг сетки (из-за дескретности заряда шаг = 1)
@@ -266,13 +266,13 @@ def Transmon(Ej1, Ej2, Ec, gridSize=100, numOfLvls=100, F=0):
         q = h * n - gridSize
 
         if (n == 0):
-            H[n, n] = Ec * q ** 2
+            H[n, n] = Ec * (q + Q) ** 2
             H[n, n + 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) + (Ej2 - Ej1) / 2j * np.sin(F / 2)
         elif (n == 2 * gridSize):
-            H[n, n] = Ec * q ** 2
+            H[n, n] = Ec * (q + Q) ** 2
             H[n, n - 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) - (Ej2 - Ej1) / 2j * np.sin(F / 2)
         else:
-            H[n, n] = Ec * q ** 2
+            H[n, n] = Ec * (q + Q) ** 2
             H[n, n - 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) - (Ej2 - Ej1) / 2j * np.sin(F / 2)
             H[n, n + 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) + (Ej2 - Ej1) / 2j * np.sin(F / 2)
 
