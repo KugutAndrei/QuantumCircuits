@@ -675,7 +675,7 @@ def LindbladParamEx(H, V, L, psiIn, timelist, force):
 
 """
 
-def ReverseQuantization(El, Ec, S=None):
+def ReverseQuantization(El, Ec, S):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
     # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
     # S – матрица перехода от модельных потоков к реальным
@@ -702,11 +702,10 @@ def ReverseQuantization(El, Ec, S=None):
     C = InvC.I
     
     # переходим к реальной цепи заменами
-    if(S != None):
-        S = np.asmatrix(S)
+    S = np.asmatrix(S)
         
-        C = S.T @ C @ S
-        InvL = S.T @ InvL @ S
+    C = S.T @ C @ S
+    InvL = S.T @ InvL @ S
         
     nL = np.linspace[0, 0, n]
     
