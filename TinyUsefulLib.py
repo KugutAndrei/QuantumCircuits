@@ -707,7 +707,7 @@ def ReverseQuantization(El, Ec, S):
     C = S.T @ C @ S
     InvL = S.T @ InvL @ S
         
-    L = np.linspace[0, 0, n]
+    L = np.linspace(0, 0, n)
     
     # переведем C в удобный для чтения вид (вычтем C связей из диагонали)
     
