@@ -14,6 +14,18 @@ from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FuncFormatter
 
+e=1.6*10**(-19)
+hpl=1.05*10**(-34)
+Rq=hpl/(e)**2
+Fq=(2*np.pi*hpl)/(2*e)
+kb=1.38*10**(-23)
+epsilon0=8.85*10**(-12)
+mu0=1.256*1e-6
+epsilon=10
+d=2*10**(-9)
+Z0=50
+j=0.5*10**6
+S=(1000*500)*10**(-18)
 
 def dagger(a):
     return np.conjugate(a.transpose())
@@ -666,7 +678,7 @@ def LindbladParamEx(H, V, L, psiIn, timelist, force):
 def ReverseQuantization(El, Ec, S=0):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
     # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
-    # S – матрица перехода от реальных потоков к модельным
+    # S – матрица перехода от модельных потоков к реальным
     
     n = Ec.shape[0]
     
