@@ -844,10 +844,14 @@ def UnitMDecomposer(U):
     
     return decomp
 
-def ReverseQuantization(El, Ec, S=np.asarray([])):
+def ReverseQuantization(Elin, Ecin, Sin=np.asarray([])):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
     # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
     # S – матрица перехода от реальных потоков к модельным
+    
+    El = np.copy(Elin)
+    Ec = np.copy(Ecin)
+    S = np.copy(Sin)
     
     n = Ec.shape[0]
     
@@ -902,9 +906,13 @@ def ReverseQuantization(El, Ec, S=np.asarray([])):
     return(L, C)
 
 
-def ForwardQuantization(L, C, S=np.asarray([])):
+def ForwardQuantization(Lin, Cin, Sin=np.asarray([])):
     # C – матрица nxn с емкостями
     # S – матрица перехода от реальных потоков к модельным
+    
+    L = np.copy(Lin)
+    C = np.copy(Cin)
+    S = np.copy(Sin)
     
     n = L.shape[0]
     InvL = np.zeros((n, n))
