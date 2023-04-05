@@ -674,64 +674,6 @@ def LindbladParamEx(H, V, L, psiIn, timelist, force):
     return rolistM
 
 """
-
-def ReverseQuantization(El, Ec, S):
-    # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
-    # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
-    # S – матрица перехода от модельных потоков к реальным
-    
-    n = Ec.shape[0]
-    
-    # заполняем обратную емкость InvC и индуктивность InvL
-    InvC = np.zeros((n, n))
-    InvL = np.zeros((n, n))
-    
-    # учтем, что энергия в GHz, а емкость в fF
-    for i in range(n):
-        for j in range(n):
-            if(j == i):
-                InvC[i, i] = Fq/e * Ec[i, i] / 10**6
-                InvL[i, i] = 16 * np.pi **2 *e/Fq * El[i]
-            elif(j > i):
-                InvC[i, j] = InvC[j, i] = 1/2*Fq/e * Ec[i, j] / 10**6
-            
-        
-    # находим матрицу емкости
-    InvC = np.asmatrix(InvC)
-    InvL = np.asmatrix(InvL)
-    C = InvC.I
-    
-    # переходим к реальной цепи заменами
-    S = np.asmatrix(S)
-        
-    C = S.T @ C @ S
-    InvL = S.T @ InvL @ S
-        
-    L = np.linspace(0, 0, n)
-    
-    # переведем C в удобный для чтения вид (вычтем C связей из диагонали)
-    
-    for i in range(n):
-        
-        # также вернем L
-        L[i] = 1/InvL[i, i]
-        
-        for j in range(n):
-            if(i > j):
-                C[i, j] = 0
-                
-            elif(i < j and C[i, j]!=0):
-                C[i, j] = -C[i, j]
-                
-                # чистим диагональ
-                C[i, i] = C[i, i] - C[i, j]
-                C[j, j] = C[j, j] - C[i, j]
-                
-    
-    
-    # на выходе емкости в fF и индуктивности в nH
-    
-    return(np.asarray(C), np.asarray(L))
         
 
 def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None, q31=None, q13=None, 
@@ -901,3 +843,108 @@ def UnitMDecomposer(U):
             return
     
     return decomp
+
+def ReverseQuantization(El, Ec, S=np.asarray([])):
+    # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
+    # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
+    # S – матрица перехода от реальных потоков к модельным
+    
+    n = Ec.shape[0]
+    
+    # заполняем обратную емкость InvC и индуктивность InvL
+    InvC = np.zeros((n, n))
+    InvL = np.zeros((n, n))
+    
+    # учтем, что энергия в GHz, а емкость в fF
+    for i in range(n):
+        for j in range(n):
+            if(j == i):
+                InvC[i, i] = Fq/e * Ec[i, i] / 10**6 * 10**3
+                InvL[i, i] = 16 * np.pi **2 *e/Fq * El[i]
+            elif(j > i):
+                InvC[i, j] = InvC[j, i] = 1/2*Fq/e * Ec[i, j] / 10**6 * 10**3
+    
+    # находим матрицу емкости
+    C = np.linalg.inv(InvC) * 10**3
+    
+    # переходим к реальной цепи заменами
+    if(S.shape[0] != 0):
+        
+        C = np.transpose(S) @ C @ S
+        InvL = np.transpose(S) @ InvL @ S
+        
+    L = np.linspace(0, 0, n)
+    
+    # переведем C в удобный для чтения вид (вычтем C связей из диагонали)
+    
+    
+    for i in range(n):
+        
+        # также вернем L
+        if(InvL[i, i] != 0):
+            L[i] = 1/InvL[i, i] 
+        else:
+            L[i] = 99999999
+        
+        for j in range(n):
+            if(i > j):
+                C[i, j] = 0
+                
+            elif(i < j and C[i, j]!=0):
+                C[i, j] = -C[i, j]
+                
+                # чистим диагональ
+                C[i, i] = C[i, i] - abs(C[i, j])
+                C[j, j] = C[j, j] - abs(C[i, j])
+    
+    # на выходе емкости в fF и индуктивности в nH
+    
+    return(L, C)
+
+
+def ForwardQuantization(L, C, S=np.asarray([])):
+    # C – матрица nxn с емкостями
+    # S – матрица перехода от реальных потоков к модельным
+    
+    n = L.shape[0]
+    InvL = np.zeros((n, n))
+    # заполним нормльно матрицы
+    for i in range(n):
+        InvL[i, i] = 1/L[i]
+        for j in range(n):
+            if(i < j and C[i, j]!=0):
+                
+                
+                C[j, i] = C[i, j] = - C[i, j]
+                
+                C[i, i] = C[i, i] + abs(C[i, j])
+                C[j, j] = C[j, j] + abs(C[i, j])
+    
+    
+    # переходим к модельной цепи заменами
+    if(S.shape[0] != 0):
+        S = np.linalg.inv(S)
+        
+        C = np.transpose(S) @ C @ S
+        InvL = np.transpose(S) @ InvL @ S
+        
+    # находим матрицу энергий
+    CInv = np.linalg.inv(C)
+    
+    Ec = np.zeros((n, n))
+    El = np.zeros(n)
+    
+    # учтем, что энергия в GHz, а емкость в fF
+    for i in range(n):
+        El[i] = InvL[i, i] * Fq /16/np.pi**2/e
+        
+        for j in range(n):
+            if(j == i):
+                Ec[i, i] = e/Fq * CInv[i, i] * 10**6
+            elif(j > i):
+                Ec[i, j] = Ec[j, i] = 2*e/Fq * CInv[i, j] * 10**6
+                Ec[j, i] = 0
+    
+    
+    return(El, Ec)
+
