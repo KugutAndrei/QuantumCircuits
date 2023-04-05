@@ -844,14 +844,13 @@ def UnitMDecomposer(U):
     
     return decomp
 
-def ReverseQuantization(Elin, Ecin, Sin=np.asarray([])):
+def ReverseQuantization(Elin, Ecin, S=np.asarray([])):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
     # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
     # S – матрица перехода от реальных потоков к модельным
     
     El = np.copy(Elin)
     Ec = np.copy(Ecin)
-    S = np.copy(Sin)
     
     n = Ec.shape[0]
     
@@ -873,9 +872,9 @@ def ReverseQuantization(Elin, Ecin, Sin=np.asarray([])):
     
     # переходим к реальной цепи заменами
     if(S.shape[0] != 0):
-        
-        C = np.transpose(S) @ C @ S
-        InvL = np.transpose(S) @ InvL @ S
+        St = np.copy(S)
+        C = np.transpose(St) @ C @ St
+        InvL = np.transpose(St) @ InvL @ St
         
     L = np.linspace(0, 0, n)
     
@@ -906,13 +905,12 @@ def ReverseQuantization(Elin, Ecin, Sin=np.asarray([])):
     return(L, C)
 
 
-def ForwardQuantization(Lin, Cin, Sin=np.asarray([])):
+def ForwardQuantization(Lin, Cin, S=np.asarray([])):
     # C – матрица nxn с емкостями
     # S – матрица перехода от реальных потоков к модельным
     
     L = np.copy(Lin)
     C = np.copy(Cin)
-    S = np.copy(Sin)
     
     n = L.shape[0]
     InvL = np.zeros((n, n))
@@ -931,10 +929,11 @@ def ForwardQuantization(Lin, Cin, Sin=np.asarray([])):
     
     # переходим к модельной цепи заменами
     if(S.shape[0] != 0):
-        S = np.linalg.inv(S)
+        St = np.copy(S)
+        St = np.linalg.inv(St)
         
-        C = np.transpose(S) @ C @ S
-        InvL = np.transpose(S) @ InvL @ S
+        C = np.transpose(St) @ C @ St
+        InvL = np.transpose(St) @ InvL @ St
         
     # находим матрицу энергий
     CInv = np.linalg.inv(C)
