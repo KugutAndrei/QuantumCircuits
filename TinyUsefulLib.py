@@ -955,3 +955,176 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
     
     return(El, Ec)
 
+
+def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10):
+    # энергии в MГц!!!, a С в фФ
+    # weightС - матрица с весами зануления емкостей
+    size = Ec0.shape[0]
+    indexSpace = []
+    valueSpace = []
+    
+    # оперделим область параметров с помощью deltaEc
+    bounds = []
+    
+    for n in range(size):
+        for m in range(size):
+            if(deltaEcMax[n, m] != 0):
+                indexSpace.append([n, m])
+                bounds.append((-deltaEcMax[n, m], +deltaEcMax[n, m]))
+                valueSpace.append(deltaEcMax[n, m])
+    
+    dim = len(indexSpace)
+
+    
+    # работаем в области deltaEc
+    
+    def loss(deltaEc):
+        Ec = np.copy(Ec0)
+        for i in range(dim):
+            n = indexSpace[i][0]
+            m = indexSpace[i][1]
+            
+            Ec[n, m] += deltaEc[i]
+            
+        _, C = tul.ReverseQuantization(El/1000, Ec/1000, S=S)
+        
+        answ = 0
+        
+        for n in range(size):
+            for m in range(size - n):
+                answ += weightC[n, n + m] * C[n, n + m]**2
+        return answ
+        
+    # теперь устроим оптимизацию с рандомными начальными точками и выберем лучшее
+    ans = np.zeros(dim)
+    lossVal = loss(ans)
+    
+    for sample in range(zeal):
+        
+        # генерируем x0
+        x0 = np.random.rand(dim) * 2*np.asarray(valueSpace) - np.asarray(valueSpace)
+        # оптимизируем
+        sol = minimize(loss, x0=x0, bounds=bounds)
+        
+        if(sol.success != True):
+            continue
+        
+        if(sol.fun < lossVal):
+            lossVal = sol.fun
+            ans = sol.x
+    
+    finalAns = np.copy(Ec0)
+    
+    for i in range(dim):
+        n = indexSpace[i][0]
+        m = indexSpace[i][1]
+            
+        finalAns[n, m] += ans[i]
+        
+    _, C = tul.ReverseQuantization(El/1000, finalAns/1000, S=S)
+    
+    return(finalAns, C)
+
+
+def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0):
+    # энергии в MГц!!!, a С в фФ
+    # weightС - матрица с весами зануления емкостей
+    size = C0.shape[0]
+    indexSpace = []
+    valueSpace = []
+    
+    # оперделим область параметров с помощью deltaEc
+    bounds = []
+    
+    for n in range(size):
+        for m in range(size):
+            if(deltaCMax[n, m] != 0):
+                indexSpace.append([n, m])
+                bounds.append((-deltaCMax[n, m], +deltaCMax[n, m]))
+                valueSpace.append(deltaCMax[n, m])
+    
+    dim = len(indexSpace)
+
+    
+    # работаем в области deltaEc
+    
+    def loss(deltaC):
+        C = np.copy(C0)
+        for i in range(dim):
+            n = indexSpace[i][0]
+            m = indexSpace[i][1]
+            
+            C[n, m] += deltaC[i]
+            
+        _, Ec = tul.ForwardQuantization(L, C, S=S)
+        
+        Ec = Ec*1000
+        answ = 0
+        
+        for n in range(size):
+            for m in range(size - n):
+                answ += weightEc[n, n + m] * Ec[n, n + m]**2
+        
+        return answ
+        
+    # теперь устроим оптимизацию с рандомными начальными точками и выберем лучшее
+    ans = np.zeros(dim)
+    lossVal = loss(ans)
+    print(lossVal, '\n')
+    
+    for sample in range(zeal):
+
+        # генерируем x0
+        x0 = np.random.rand(dim) * 2*np.asarray(valueSpace) - np.asarray(valueSpace)
+        # оптимизируем
+        if(method == 0):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='Nelder-Mead')
+        elif(method == 1):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='Powell')
+        elif(method == 2):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='CG')
+        elif(method == 3):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='BFGS')
+        elif(method == 4):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='Newton-CG')
+        elif(method == 5):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='L-BFGS-B')
+        elif(method == 6):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='TNC')
+        elif(method == 7):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='COBYLA')
+        elif(method == 8):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='SLSQP')
+        elif(method == 9):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-constr')
+        elif(method == 10):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='dogleg')
+        elif(method == 11):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-ncg')
+        elif(method == 12):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-krylov')
+        elif(method == 13):
+            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-exact')
+        
+        
+        if(sol.success != True):
+            continue
+        
+        if(sol.fun < lossVal):
+            print(lossVal, '\n')
+            lossVal = sol.fun
+            ans = sol.x
+    
+    finalAns = np.copy(C0)
+    
+    for i in range(dim):
+        n = indexSpace[i][0]
+        m = indexSpace[i][1]
+            
+        finalAns[n, m] += ans[i]
+        
+    _, Ec = tul.ForwardQuantization(L, finalAns, S=S)
+    
+    return(finalAns, 1000*Ec)
+
+
