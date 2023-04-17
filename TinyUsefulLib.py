@@ -279,14 +279,14 @@ def Transmon(Ej1, Ej2, Ec, gridSize=100, numOfLvls=100, F=0, Q=0):
 
         if (n == 0):
             H[n, n] = Ec * (q + Q) ** 2
-            H[n, n + 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) + (Ej2 - Ej1) / 2j * np.sin(F / 2)
+            H[n, n + 1] = -(Ej1 + Ej2) / 2 * np.cos(2*np.pi*F / 2) + (Ej2 - Ej1) / 2j * np.sin(2*np.pi*F / 2)
         elif (n == 2 * gridSize):
             H[n, n] = Ec * (q + Q) ** 2
-            H[n, n - 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) - (Ej2 - Ej1) / 2j * np.sin(F / 2)
+            H[n, n - 1] = -(Ej1 + Ej2) / 2 * np.cos(2*np.pi*F / 2) - (Ej2 - Ej1) / 2j * np.sin(2*np.pi*F / 2)
         else:
             H[n, n] = Ec * (q + Q) ** 2
-            H[n, n - 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) - (Ej2 - Ej1) / 2j * np.sin(F / 2)
-            H[n, n + 1] = -(Ej1 + Ej2) / 2 * np.cos(F / 2) + (Ej2 - Ej1) / 2j * np.sin(F / 2)
+            H[n, n - 1] = -(Ej1 + Ej2) / 2 * np.cos(2*np.pi*F / 2) - (Ej2 - Ej1) / 2j * np.sin(2*np.pi*F / 2)
+            H[n, n + 1] = -(Ej1 + Ej2) / 2 * np.cos(2*np.pi*F / 2) + (Ej2 - Ej1) / 2j * np.sin(2*np.pi*F / 2)
 
     # диагонализация
     (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
