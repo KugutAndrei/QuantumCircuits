@@ -1142,7 +1142,7 @@ def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
         purity = np.zeros(N1*N2)
         
         for n in range(states.shape[1]):
-            s = abs(mixStates[:, n])
+            s = abs(states[:, n])
             s = s.reshape(N1, N2)
             
             oldNum = key[np.unravel_index(s.argmax(), s.shape)]
@@ -1191,7 +1191,7 @@ def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
         purity = np.zeros(N1*N2*N3)
         
         for n in range(states.shape[1]):
-            s = abs(mixStates[:, n])
+            s = abs(states[:, n])
             s = s.reshape(N1, N2, N3)
             
             oldNum = key[np.unravel_index(s.argmax(), s.shape)]
