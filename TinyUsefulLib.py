@@ -13,6 +13,7 @@ from scipy import interpolate
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FuncFormatter
+from scipy.optimize import minimize
 
 e=1.6*10**(-19)
 hpl=1.05*10**(-34)
