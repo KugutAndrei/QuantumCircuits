@@ -1128,3 +1128,110 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0)
     return(finalAns, 1000*Ec)
 
 
+def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
+    # расшифровывает собственные состояния тензорных произведений 2 и 3 систем
+    tmp = np.asarray(nS)
+    outList = []
+    
+    if(tmp.shape[0] == 2):
+        N1 = tmp[0]
+        N2 = tmp[1]
+        
+        key = np.zeros((N1, N2), dtype=object)
+        purity = np.zeros(NFin)
+        
+        for n in range(states.shape[1]):
+            s = abs(mixStates[:, n])
+            s = s.reshape(N1, N2)
+            
+            oldNum = key[np.unravel_index(s.argmax(), s.shape)]
+            purity[n] = abs(s[np.unravel_index(s.argmax(), s.shape)])**2 
+            
+            if(oldNum != 0):
+                if(purity[oldNum] <= purity[n]):
+                    key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            else:
+                key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            if(stList):
+                string = str(n) + ': '
+                
+                while(True):
+                    localPur = abs(s[np.unravel_index(s.argmax(), s.shape)])**2
+                    if(localPur > dirtyBorder):
+                        string += str(localPur * 100)+'% of '+str(np.unravel_index(s.argmax(), s.shape))+"\n    "
+                    else:
+                        break
+                    
+                    s[np.unravel_index(s.argmax(), s.shape)] = 0
+                    
+                outList.append(string)
+            
+        # выделяем подавленные состояния с помощью None
+        for n in range(key.shape[0]):
+            for m in range(key.shape[1]):
+                for k in range(key.shape[2]):
+                    if(n + m + k != 0 and key[n, m, k] == 0):
+                        key[n, m, k] = None
+        
+        if(stList):
+            return (key, purity, outList)
+        else:
+            return (key, purity)
+        
+        
+    elif(tmp.shape[0] == 3):
+        N1 = tmp[0]
+        N2 = tmp[1]
+        N3 = tmp[2]
+        
+        key = np.zeros((N1, N2, N3), dtype=object)
+        purity = np.zeros(NFin)
+        
+        for n in range(states.shape[1]):
+            s = abs(mixStates[:, n])
+            s = s.reshape(N1, N2, N3)
+            
+            oldNum = key[np.unravel_index(s.argmax(), s.shape)]
+            purity[n] = abs(s[np.unravel_index(s.argmax(), s.shape)])**2 
+            
+            if(oldNum != 0):
+                if(purity[oldNum] <= purity[n]):
+                    key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            else:
+                key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            if(stList):
+                string = str(n) + ': '
+                
+                while(True):
+                    localPur = abs(s[np.unravel_index(s.argmax(), s.shape)])**2
+                    if(localPur > dirtyBorder):
+                        string += str(localPur * 100)+'% of '+str(np.unravel_index(s.argmax(), s.shape))+"\n    "
+                    else:
+                        break
+                    
+                    s[np.unravel_index(s.argmax(), s.shape)] = 0
+                    
+                outList.append(string)
+            
+        # выделяем подавленные состояния с помощью None
+        for n in range(key.shape[0]):
+            for m in range(key.shape[1]):
+                for k in range(key.shape[2]):
+                    if(n + m + k != 0 and key[n, m, k] == 0):
+                        key[n, m, k] = None
+                        
+        if(stList):
+            return (key, purity, outList)
+        else:
+            return (key, purity)
+        
+        
+    else:
+        print("To much")
+        return 1
+    
+    
