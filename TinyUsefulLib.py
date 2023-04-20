@@ -1139,7 +1139,7 @@ def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
         N2 = tmp[1]
         
         key = np.zeros((N1, N2), dtype=object)
-        purity = np.zeros(NFin)
+        purity = np.zeros(N1*N2)
         
         for n in range(states.shape[1]):
             s = abs(mixStates[:, n])
@@ -1188,7 +1188,7 @@ def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
         N3 = tmp[2]
         
         key = np.zeros((N1, N2, N3), dtype=object)
-        purity = np.zeros(NFin)
+        purity = np.zeros(N1*N2*N3)
         
         for n in range(states.shape[1]):
             s = abs(mixStates[:, n])
