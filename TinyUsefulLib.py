@@ -260,7 +260,9 @@ def Fluxonium(Ej, El, Ec, gridSize=100, numOfLvls=100, leftBorder=-20, rightBord
     eigVectors = eigVectors[:, order]
 
     (phi, q) = OperInEigStates(eigVectors, gridSize=gridSize, h=h, leftBorder=leftBorder)
-
+    
+    eigEnergies = eigEnergies - eigEnergies[0]
+    
     return (eigEnergies, phi, q)
 
 
@@ -298,6 +300,8 @@ def Transmon(Ej1, Ej2, Ec, gridSize=100, numOfLvls=100, F=0, Q=0):
 
     (q, phi) = OperInEigStates(eigVectors, gridSize=2 * gridSize + 1, h=h, leftBorder=-gridSize)
 
+    eigEnergies = eigEnergies - eigEnergies[0]
+    
     return (eigEnergies, phi, q)
 
 
