@@ -1061,7 +1061,7 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0)
             
             C[n, m] += deltaC[i]
             
-        _, Ec = tul.ForwardQuantization(L, C, S=S)
+        _, Ec = ForwardQuantization(L, C, S=S)
         
         Ec = Ec*1000
         answ = 0
@@ -1128,7 +1128,7 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0)
             
         finalAns[n, m] += ans[i]
         
-    _, Ec = tul.ForwardQuantization(L, finalAns, S=S)
+    _, Ec = ForwardQuantization(L, finalAns, S=S)
     
     return(finalAns, 1000*Ec)
 
