@@ -379,7 +379,13 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
 
 
 
-def Graphs(t, X, x='x', y='y', full=False, save=False, filename=''):
+def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=None, yborders=None):
+    if(xborders!=None):
+        plt.xlim(xborders)
+    
+    if(yborders!=None):
+        plt.ylim(yborders)
+        
     plt.rcParams["figure.figsize"] = (10, 10)
 
     for n in range(np.shape(X)[0]):
