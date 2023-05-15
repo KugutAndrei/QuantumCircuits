@@ -379,7 +379,8 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
 
 
 
-def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=None, yborders=None):
+def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=None, yborders=None, lsize=10):
+    
     if(xborders!=None):
         plt.xlim(xborders)
     
@@ -402,6 +403,7 @@ def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=Non
 
         plot = plt.plot(t, Xf, color="gray", lw=1.5, label=lbl)
 
+    
     # врубаем сетку
     plt.minorticks_on()
 
@@ -416,6 +418,8 @@ def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=Non
              color='k',
              linestyle=':')
 
+    plt.rcParams['font.size'] = str(lsize)
+    
     plt.xlabel(x)
     plt.ylabel(y)
 
