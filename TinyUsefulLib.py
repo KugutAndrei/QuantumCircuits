@@ -427,6 +427,7 @@ def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=Non
         plt.savefig(filename, facecolor='white')
 
     plt.show()
+    plt.close()
 
 
 def PlotPcolormesh(fidelity, x, y, xlabel = 'x', ylabel = 'y', opt_lines=True, 
@@ -1250,3 +1251,157 @@ def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
         return 1
     
     
+def FluxoniumFitter(specDots, borders, 
+                    weights=np.asarray(None), zeal=40, cutError=None, 
+                    FlGrid=400, permission = 10, onAir=False, fixEc=None):
+    
+# specDots = ([потоки относительно полкванта], 
+#             [номер потоковой точки, номер уровня начиная с 1, энергия в ГГц])
+    
+    Lvls = specDots[1].shape[1]
+    if(weights.any()==None):
+        weights=np.ones(specDots[1].shape)
+    
+    if(fixEc==None):
+        def loss(optParams):
+
+            optEj = optParams[0]
+            optEl = optParams[1]
+            optEc = optParams[2]
+
+            error = 0
+
+            for i in range(specDots[0].shape[0]):
+                flux = specDots[0][i]
+
+                spectrum, _, _ = tul.Fluxonium(Ej=optEj, El=optEl, Ec=optEc, 
+                                               gridSize=FlGrid, numOfLvls=Lvls+1, F=flux)
+
+                for j in range(Lvls):
+                    for k in range(specDots[1].shape[2]):
+
+                        if(specDots[1][i, j, k] != 0):
+                            error += weights[i, j, k]*(10000*(specDots[1][i, j, k] - spectrum[j + 1]))**2
+
+            return error
+
+        lossVal=1000000
+        ans = borders[:, 0]
+
+        if(cutError==None):
+            for i in tqdm.tqdm(range(zeal)):
+
+                # генерируем x0
+                x0 = np.random.rand(3) * (borders[:, 1] - borders[:, 0]) + borders[:, 0]
+                # оптимизируем
+                sol = minimize(loss, x0=x0, bounds=borders)
+
+                if(sol.success != True):
+                    continue
+
+                if(sol.fun < lossVal):
+                    limbo = (ans[0] - sol.x[0])**2 + (ans[1] - sol.x[1])**2 + (ans[2] - sol.x[2])**2
+                    if(limbo > permission*(sol.fun - lossVal)**2):
+                        print("ALARM, lack of dots or weights!")
+
+                    lossVal = sol.fun
+                    ans = sol.x
+
+                    if(onAir):
+                        print(ans, "\n", lossVal, "\n")
+
+        else:
+            while(lossVal > cutError):
+
+                # генерируем x0
+                x0 = np.random.rand(3) * (borders[:, 1] - borders[:, 0]) + borders[:, 0]
+                # оптимизируем
+                sol = minimize(loss, x0=x0, bounds=borders)
+
+                if(sol.success != True):
+                    continue
+
+                if(sol.fun < lossVal):
+                    limbo = (ans[0] - sol.x[0])**2 + (ans[1] - sol.x[1])**2 + (ans[2] - sol.x[2])**2
+                    if(limbo > permission*(sol.fun - lossVal)**2):
+                        print("ALARM, lack of dots or weights!")
+
+                    lossVal = sol.fun
+                    ans = sol.x
+
+                    if(onAir):
+                        print(ans, "\n", lossVal, "\n")
+    
+    else:
+        def loss(optParams):
+
+            optEj = optParams[0]
+            optEl = optParams[1]
+            optEc = fixEc
+
+            error = 0
+
+            for i in range(specDots[0].shape[0]):
+                flux = specDots[0][i]
+
+                spectrum, _, _ = tul.Fluxonium(Ej=optEj, El=optEl, Ec=optEc, 
+                                               gridSize=FlGrid, numOfLvls=Lvls+1, F=flux)
+
+                for j in range(Lvls):
+                    for k in range(specDots[1].shape[2]):
+
+                        if(specDots[1][i, j, k] != 0):
+                            error += weights[i, j, k]*(10000*(specDots[1][i, j, k] - spectrum[j + 1]))**2
+
+            return error
+
+        lossVal=1000000
+        ans = borders[:, 0]
+
+        if(cutError==None):
+            for i in tqdm.tqdm(range(zeal)):
+
+                # генерируем x0
+                x0 = np.random.rand(2) * (borders[:, 1] - borders[:, 0]) + borders[:, 0]
+                # оптимизируем
+                sol = minimize(loss, x0=x0, bounds=borders)
+
+                if(sol.success != True):
+                    continue
+
+                if(sol.fun < lossVal):
+                    limbo = (ans[0] - sol.x[0])**2 + (ans[1] - sol.x[1])**2
+                    if(limbo > permission*(sol.fun - lossVal)**2):
+                        print("ALARM, lack of dots or weights!")
+
+                    lossVal = sol.fun
+                    ans = sol.x
+
+                    if(onAir):
+                        print(ans, "\n", lossVal, "\n")
+
+        else:
+            while(lossVal > cutError):
+
+                # генерируем x0
+                x0 = np.random.rand(2) * (borders[:, 1] - borders[:, 0]) + borders[:, 0]
+                # оптимизируем
+                sol = minimize(loss, x0=x0, bounds=borders)
+
+                if(sol.success != True):
+                    continue
+
+                if(sol.fun < lossVal):
+                    limbo = (ans[0] - sol.x[0])**2 + (ans[1] - sol.x[1])**2
+                    if(limbo > permission*(sol.fun - lossVal)**2):
+                        print("ALARM, lack of dots or weights!")
+
+                    lossVal = sol.fun
+                    ans = sol.x
+
+                    if(onAir):
+                        print(ans, "\n", lossVal, "\n")
+                
+    
+    return ans
+
