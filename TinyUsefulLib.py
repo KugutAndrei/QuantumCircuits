@@ -1274,7 +1274,7 @@ def FluxoniumFitter(specDots, borders,
             for i in range(specDots[0].shape[0]):
                 flux = specDots[0][i]
 
-                spectrum, _, _ = tul.Fluxonium(Ej=optEj, El=optEl, Ec=optEc, 
+                spectrum, _, _ = Fluxonium(Ej=optEj, El=optEl, Ec=optEc, 
                                                gridSize=FlGrid, numOfLvls=Lvls+1, F=flux)
 
                 for j in range(Lvls):
@@ -1344,7 +1344,7 @@ def FluxoniumFitter(specDots, borders,
             for i in range(specDots[0].shape[0]):
                 flux = specDots[0][i]
 
-                spectrum, _, _ = tul.Fluxonium(Ej=optEj, El=optEl, Ec=optEc, 
+                spectrum, _, _ = Fluxonium(Ej=optEj, El=optEl, Ec=optEc, 
                                                gridSize=FlGrid, numOfLvls=Lvls+1, F=flux)
 
                 for j in range(Lvls):
