@@ -972,14 +972,14 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
     return(El, Ec)
 
 
-def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, targetC=None):
+def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, np.asarray(None)):
     # энергии в MГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     size = Ec0.shape[0]
     indexSpace = []
     valueSpace = []
     
-    if(targetC == None):
+    if(targetC.any()==None):
         targetC=Np.zeros((size, size))
     
     # оперделим область параметров с помощью deltaEc
@@ -1045,13 +1045,13 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, target
     return(finalAns, C)
 
 
-def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0, targetEc=None):
+def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0, np.asarray(None)):
     # энергии в MГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     size = C0.shape[0]
     indexSpace = []
     valueSpace = []
-    if(targetEc == None):
+    if(targetEc.any()==None):
         targetEc=Np.zeros((size, size))
     
     # оперделим область параметров с помощью deltaEc
