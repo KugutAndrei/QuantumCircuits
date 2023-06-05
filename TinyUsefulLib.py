@@ -980,7 +980,7 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, target
     valueSpace = []
     
     if(targetC.any()==None):
-        targetC=Np.zeros((size, size))
+        targetC=np.zeros((size, size))
     
     # оперделим область параметров с помощью deltaEc
     bounds = []
@@ -1052,7 +1052,7 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0,
     indexSpace = []
     valueSpace = []
     if(targetEc.any()==None):
-        targetEc=Np.zeros((size, size))
+        targetEc=np.zeros((size, size))
     
     # оперделим область параметров с помощью deltaEc
     bounds = []
