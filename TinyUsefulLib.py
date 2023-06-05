@@ -972,12 +972,15 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
     return(El, Ec)
 
 
-def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10):
+def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, targetC=None):
     # энергии в MГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     size = Ec0.shape[0]
     indexSpace = []
     valueSpace = []
+    
+    if(targetC == None):
+        targetC=Np.zeros((size, size))
     
     # оперделим область параметров с помощью deltaEc
     bounds = []
@@ -1008,7 +1011,7 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10):
         
         for n in range(size):
             for m in range(size - n):
-                answ += weightC[n, n + m] * C[n, n + m]**2
+                answ += weightC[n, n + m] * (C[n, n + m] - targetC[n, n + m])**2
         return answ
         
     # теперь устроим оптимизацию с рандомными начальными точками и выберем лучшее
@@ -1042,12 +1045,14 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10):
     return(finalAns, C)
 
 
-def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0):
+def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0, targetEc=None):
     # энергии в MГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     size = C0.shape[0]
     indexSpace = []
     valueSpace = []
+    if(targetEc == None):
+        targetEc=Np.zeros((size, size))
     
     # оперделим область параметров с помощью deltaEc
     bounds = []
@@ -1079,7 +1084,7 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0)
         
         for n in range(size):
             for m in range(size - n):
-                answ += weightEc[n, n + m] * Ec[n, n + m]**2
+                answ += weightEc[n, n + m] * (Ec[n, n + m] - targetEc[n, n + m])**2
         
         return answ
         
