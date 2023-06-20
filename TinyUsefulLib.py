@@ -379,7 +379,7 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
 
 
 
-def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=None, yborders=None, lsize=10):
+def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=None, yborders=None, lsize=10, grid=True):
     
     if(xborders!=None):
         plt.xlim(xborders)
@@ -403,20 +403,20 @@ def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=Non
 
         plot = plt.plot(t, Xf, color="gray", lw=1.5, label=lbl)
 
-    
-    # врубаем сетку
-    plt.minorticks_on()
+    if(grid):
+        # врубаем сетку
+        plt.minorticks_on()
 
-    # Определяем внешний вид линий основной сетки:
-    plt.grid(which='major',
-             color='k',
-             linewidth=0.5)
+        # Определяем внешний вид линий основной сетки:
+        plt.grid(which='major',
+                 color='k',
+                 linewidth=0.5)
 
-    # Определяем внешний вид линий вспомогательной
-    # сетки:
-    plt.grid(which='minor',
-             color='k',
-             linestyle=':')
+        # Определяем внешний вид линий вспомогательной
+        # сетки:
+        plt.grid(which='minor',
+                 color='k',
+                 linestyle=':')
 
     plt.rcParams['font.size'] = str(lsize)
     
