@@ -412,7 +412,7 @@ def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=Non
                  color='k',
                  linewidth=0.5)
             
-        if(grid):
+        if(subGrid):
             # Определяем внешний вид линий вспомогательной
             # сетки:
             plt.grid(which='minor',
