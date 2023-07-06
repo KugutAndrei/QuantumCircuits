@@ -1193,9 +1193,8 @@ def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
         # выделяем подавленные состояния с помощью None
         for n in range(key.shape[0]):
             for m in range(key.shape[1]):
-                for k in range(key.shape[2]):
-                    if(n + m + k != 0 and key[n, m, k] == 0):
-                        key[n, m, k] = None
+                    if(n + m != 0 and key[n, m] == 0):
+                        key[n, m] = None
         
         if(stList):
             return (key, purity, outList)
