@@ -367,6 +367,9 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
             newOpers2 = np.zeros((opers2.shape[0], size1*size2, size1*size2), dtype=complex)
             for i in range(opers2.shape[0]):
                 newOpers2[i, :, :] = np.kron(E1, opers2[i, :, :])
+
+    # сдвигаем 0
+    eigEnergies = eigEnergies - eigEnergies[0]
     
     if(opers1.shape[0] != 0 and opers2.shape[0] != 0):
         return (eigEnergies, eigVectors, H, newOpers1, newOpers2)
