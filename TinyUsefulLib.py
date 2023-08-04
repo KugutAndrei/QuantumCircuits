@@ -1413,3 +1413,14 @@ def FluxoniumFitter(specDots, borders,
     
     return ans
 
+def nonlinearAnihilator(T, E):
+    size = E.shape[0]
+    a = np.zeros((size, size), dtype=complex)
+    
+    for n in range(size - 1):
+        a[n, n + 1] = np.sqrt(E[n + 1]/E[1])
+        
+    a = 1/np.sqrt(2*np.pi*T) * a
+    
+    return a
+
