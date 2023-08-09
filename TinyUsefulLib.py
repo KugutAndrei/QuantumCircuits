@@ -1424,3 +1424,41 @@ def nonlinearAnihilator(T, E):
     
     return a
 
+
+#coolwarm, magma, YlGnBu, winter
+
+from matplotlib.ticker import MaxNLocator
+def PlotContourf(fidelity, x, y, xlabel = 'x', ylabel = 'y', opt_lines=True, 
+                    title=None, save=False, filename='', lsize=10):
+    fig, axs = plt.subplots(nrows = 1, ncols = 1,figsize = (10, 10))
+    
+    plt.rcParams['font.size'] = str(lsize)
+    xGrid, yGrid = np.meshgrid(x, y)
+    cmap_set = 'coolwarm'
+    levels = MaxNLocator(nbins=100).tick_values(0, 1)
+    cb = axs.contourf(xGrid, yGrid, np.transpose(fidelity[:, :]), levels=levels, cmap = cmap_set)
+    axs.set_xlabel(xlabel)
+    axs.set_ylabel(ylabel)
+    fig.colorbar(cb, ax=axs)
+
+    opt_x_ind = np.argmax(np.real(fidelity))//fidelity.shape[1]
+    opt_y_ind = np.argmax(np.real(fidelity))%fidelity.shape[1]
+    
+    
+    axs.text(x[0], y[len(y)-1] + (y[len(y)-1] - y[0])*0.10, 
+             'opt ' + ylabel + ' = ' + str(np.around(y[opt_y_ind], 2)))
+    axs.text(x[0], y[len(y)-1] + (y[len(y)-1] - y[0])*0.16, 
+             'opt ' + xlabel + ' = ' + str(np.around(x[opt_x_ind], 2)))
+    axs.text(x[0], y[len(y)-1] + (y[len(y)-1] - y[0])*0.22, 
+             'max fidelity = ' + str(np.around(np.abs(fidelity[opt_x_ind, opt_y_ind]), 5)))
+    
+    if opt_lines:
+        axs.hlines(y[opt_y_ind], x[0], x[-1], color='k')
+        axs.vlines(x[opt_x_ind], y[0], y[-1], color='k')
+    if title != None:
+        plt.title(title)
+
+    if(save):
+        plt.savefig(filename, facecolor = 'white')    
+        
+    plt.show()
