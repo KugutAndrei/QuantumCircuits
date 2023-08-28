@@ -396,10 +396,10 @@ def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=Non
         for n in range(np.shape(X)[0]):
             lbl = str(n)
             plot = plt.plot(t, X[n, :], lw=1.5, label=lbl)
+        plt.legend(loc='center left', bbox_to_anchor=(1.01, 0.5))
     else:
         plot = plt.plot(t, X[:], lw=1.5)
         
-    plt.legend(loc='center left', bbox_to_anchor=(1.01, 0.5))
 
     if (full):
         Xf = np.zeros(np.shape(X)[1])
