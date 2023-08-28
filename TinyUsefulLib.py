@@ -392,10 +392,13 @@ def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=Non
         
     plt.rcParams["figure.figsize"] = (10, 10)
 
-    for n in range(np.shape(X)[0]):
-        lbl = str(n)
-        plot = plt.plot(t, X[n, :], lw=1.5, label=lbl)
-
+    if(len(X.shape) == 2):
+        for n in range(np.shape(X)[0]):
+            lbl = str(n)
+            plot = plt.plot(t, X[n, :], lw=1.5, label=lbl)
+    else:
+        plot = plt.plot(t, X[:], lw=1.5)
+        
     plt.legend(loc='center left', bbox_to_anchor=(1.01, 0.5))
 
     if (full):
