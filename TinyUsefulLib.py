@@ -912,7 +912,7 @@ def ReverseQuantization(Elin, Ecin, S=np.asarray([])):
         else:
             L[i] = 99999999
         
-        for j in range(i, n):      
+        for j in range(i + 1, n):      
             if(C[i, j]!=0):
                 C[j, i] = 0
                 C[i, j] = -C[i, j]
