@@ -912,11 +912,9 @@ def ReverseQuantization(Elin, Ecin, S=np.asarray([])):
         else:
             L[i] = 99999999
         
-        for j in range(n):
-            if(i > j):
-                C[i, j] = 0
-                
-            elif(i < j and C[i, j]!=0):
+        for j in range(i, n):      
+            if(C[i, j]!=0):
+                C[j, i] = 0
                 C[i, j] = -C[i, j]
                 
                 # чистим диагональ
@@ -968,7 +966,7 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
     for i in range(n):
         El[i] = InvL[i, i] * Fq /16/np.pi**2/e
         
-        for j in range(n):
+        for j in range(j, n):
             if(j == i):
                 Ec[i, i] = e/Fq * CInv[i, i] * 10**6
             elif(j > i):
