@@ -966,7 +966,7 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
     for i in range(n):
         El[i] = InvL[i, i] * Fq /16/np.pi**2/e
         
-        for j in range(j, n):
+        for j in range(i, n):
             if(j == i):
                 Ec[i, i] = e/Fq * CInv[i, i] * 10**6
             elif(j > i):
