@@ -270,7 +270,7 @@ def Fluxonium(Ej, El, Ec, gridSize=10, numOfLvls=5, F=0):
     # Ej, El и Ec - эффективные энергии на джоз. эл., индуктивности и емкости
 
     nu=2*np.sqrt(El*Ec)
-    _, at, a = tul.Oscillator(omega=nu, numOfLevels=gridSize)
+    _, at, a = Oscillator(omega=nu, numOfLevels=gridSize)
     one = np.diag(np.ones(gridSize))
     phi = -1j*(Ec/4/El)**0.25*(at - a)
     q = (El/4/Ec)**0.25*(at + a)
