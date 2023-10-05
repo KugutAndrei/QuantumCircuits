@@ -14,6 +14,7 @@ from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FuncFormatter
 from scipy.optimize import minimize
+from scipy.linalg import cosm, expm, sqrtm, det
 
 e=1.6*10**(-19)
 hpl=1.05*10**(-34)
@@ -227,7 +228,7 @@ def OperInEigStates(eigVectors, gridSize=0, h=0, leftBorder=0):
     return (qNew, pNew)
 
 
-def Fluxonium(Ej, El, Ec, gridSize=100, numOfLvls=100, leftBorder=-20, rightBorder=20, F=0):
+def Fluxonium_old(Ej, El, Ec, gridSize=100, numOfLvls=100, leftBorder=-20, rightBorder=20, F=0):
     # Ej, El и Ec - эффективные энергии на джоз. эл., индуктивности и емкости
 
     # h - шаг сетки
@@ -261,6 +262,24 @@ def Fluxonium(Ej, El, Ec, gridSize=100, numOfLvls=100, leftBorder=-20, rightBord
 
     (phi, q) = OperInEigStates(eigVectors, gridSize=gridSize, h=h, leftBorder=leftBorder)
     
+    eigEnergies = eigEnergies - eigEnergies[0]
+    
+    return (eigEnergies, phi, q)
+
+def Fluxonium(Ej, El, Ec, gridSize=10, numOfLvls=5, F=0):
+    # Ej, El и Ec - эффективные энергии на джоз. эл., индуктивности и емкости
+
+    nu=2*np.sqrt(El*Ec)
+    _, at, a = tul.Oscillator(omega=nu, numOfLevels=gridSize)
+    one = np.diag(np.ones(gridSize))
+    phi = -1j*(Ec/4/El)**0.25*(at - a)
+    q = (El/4/Ec)**0.25*(at + a)
+    
+    H = nu*at@a - Ej*cosm(phi + 2*np.pi*one*F)
+    (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=5000)
+    
+    phi = dagger(eigVectors)@phi@eigVectors
+    q = dagger(eigVectors)@q@eigVectors
     eigEnergies = eigEnergies - eigEnergies[0]
     
     return (eigEnergies, phi, q)
