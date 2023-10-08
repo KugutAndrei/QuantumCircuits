@@ -276,7 +276,11 @@ def Fluxonium(Ej, El, Ec, gridSize=10, numOfLvls=5, F=0):
     q = (El/4/Ec)**0.25*(at + a)
     
     H = nu*at@a - Ej*cosm(phi + 2*np.pi*one*F)
-    (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=5000)
+    (e, v) = eigsh(H, k=numOfLvls, which='SA', maxiter=5000)
+    
+    sorted_indices = np.argsort(e)
+    eigEnergies = e[sorted_indices]
+    eigVectors = v[:, sorted_indices]
     
     phi = dagger(eigVectors)@phi@eigVectors
     q = dagger(eigVectors)@q@eigVectors
