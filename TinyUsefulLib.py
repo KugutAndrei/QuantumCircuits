@@ -356,11 +356,10 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
     H2 = np.kron(E1, H2)    
     
     # q в общем базисе
-    q1 = np.kron(q1, E2)
-    q2 = np.kron(E1, q2)
+    M = np.kron(q1, q2)
     
     # полный гамильтониан
-    H = H1 + H2 + g * q1@q2
+    H = H1 + H2 + g * M
                                 
     # диагонализация
     (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
