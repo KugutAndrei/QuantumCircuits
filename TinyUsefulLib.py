@@ -744,9 +744,9 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
     size3 = spect3.size
     
     # единичная матрица 
-    E1 = np.diag(np.linspace(1, 1, size1))
-    E2 = np.diag(np.linspace(1, 1, size2))
-    E3 = np.diag(np.linspace(1, 1, size3))
+    E1 = np.diag(np.ones(size1))
+    E2 = np.diag(np.ones(size2))
+    E3 = np.diag(np.ones(size3))
     
     # диагонализованные гамильтонианы
     H1 = np.diag(spect1)
@@ -762,19 +762,16 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
     H = H1 + H2 + H3
           
     if(g12 != None):
-        q12 = np.kron(np.kron(q12, E2), E3)
-        q21 = np.kron(np.kron(E1, q21), E3)
-        H = H + g12 * q12@q21
+        M = np.kron(np.kron(q12, q21), E3)
+        H = H + g12 * M
         
     if(g23 != None):
-        q23 = np.kron(np.kron(E1, q23), E3)
-        q32 = np.kron(np.kron(E1, E2), q32)
-        H = H + g23 * q23@q32
+        M = np.kron(np.kron(E1, q23), q32)
+        H = H + g23 * M
         
     if(g31 != None):
-        q13 = np.kron(np.kron(q13, E2), E3)
-        q31 = np.kron(np.kron(E1, E2), q31)
-        H = H + g31 * q13@q31
+        M = np.kron(np.kron(q13, E2), q31)
+        H = H + g31 * M
         
         
     # диагонализация
