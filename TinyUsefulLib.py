@@ -266,8 +266,11 @@ def Fluxonium_old(Ej, El, Ec, gridSize=100, numOfLvls=100, leftBorder=-20, right
     
     return (eigEnergies, phi, q)
 
-def Fluxonium(Ej, El, Ec, gridSize=10, numOfLvls=5, F=0):
+def Fluxonium(Ej, El, Ec, gridSize=None, numOfLvls=5, F=0, Q=0):
     # Ej, El и Ec - эффективные энергии на джоз. эл., индуктивности и емкости
+
+    if(gridSize == None):
+        gridSize = int(1.5*numOfLvls) + 20
 
     nu=2*np.sqrt(El*Ec)
     _, at, a = Oscillator(omega=nu, numOfLevels=gridSize)
@@ -275,7 +278,7 @@ def Fluxonium(Ej, El, Ec, gridSize=10, numOfLvls=5, F=0):
     phi = -1j*(Ec/4/El)**0.25*(at - a)
     q = (El/4/Ec)**0.25*(at + a)
     
-    H = nu*at@a - Ej*cosm(phi + 2*np.pi*one*F)
+    H = nu*at@a + 2*Ec*Q*q - Ej*cosm(phi + 2*np.pi*one*F)
     (e, v) = eigsh(H, k=numOfLvls, which='SA', maxiter=5000)
     
     sorted_indices = np.argsort(e)
@@ -289,7 +292,11 @@ def Fluxonium(Ej, El, Ec, gridSize=10, numOfLvls=5, F=0):
     return (eigEnergies, phi, q)
 
 
-def Transmon(Ej1, Ej2, Ec, gridSize=100, numOfLvls=100, F=0, Q=0):
+def Transmon(Ej1, Ej2, Ec, gridSize=None, numOfLvls=100, F=0, Q=0):
+
+    if(gridSize=False):
+        gridSize=int(1.5*numOfLvls) + 10
+    
     # Ej и Ec - эффективные энергии на джоз. эл. и емкости
 
     # h - шаг сетки (из-за дескретности заряда шаг = 1)
