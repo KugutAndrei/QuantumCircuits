@@ -294,7 +294,7 @@ def Fluxonium(Ej, El, Ec, gridSize=None, numOfLvls=5, F=0, Q=0):
 
 def Transmon(Ej1, Ej2, Ec, gridSize=None, numOfLvls=100, F=0, Q=0):
 
-    if(gridSize=False):
+    if(gridSize == None):
         gridSize=int(1.5*numOfLvls) + 10
     
     # Ej и Ec - эффективные энергии на джоз. эл. и емкости
