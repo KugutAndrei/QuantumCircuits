@@ -1004,11 +1004,15 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
 
 
 def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, targetC=np.asarray(None)):
-    # энергии в MГц!!!, a С в фФ
+    # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     size = Ec0.shape[0]
     indexSpace = []
     valueSpace = []
+
+    Ec0*=1e3
+    El*=1e3
+    deltaEcMax*=1e3
     
     if(targetC.any()==None):
         targetC=np.zeros((size, size))
@@ -1077,13 +1081,16 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, target
 
 
 def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0, targetEc=np.asarray(None)):
-    # энергии в MГц!!!, a С в фФ
+    # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
+    
     size = C0.shape[0]
     indexSpace = []
     valueSpace = []
     if(targetEc.any()==None):
         targetEc=np.zeros((size, size))
+
+    targetEc *= 1e3
     
     # оперделим область параметров с помощью deltaEc
     bounds = []
@@ -1177,7 +1184,7 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0,
         
     _, Ec = ForwardQuantization(L, finalAns, S=S)
     
-    return(finalAns, 1000*Ec)
+    return(finalAns, Ec)
 
 
 def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
