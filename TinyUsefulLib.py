@@ -893,15 +893,27 @@ def UnitMDecomposer(U):
     
     return decomp
 
-def ReverseQuantization(Elin, Ecin, S=np.asarray([])):
+def ReverseQuantization(Elin, Ecin, S=np.asarray([None]), g_v_in=np.asarray([None])):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
     # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
     # S – матрица перехода от реальных потоков к модельным
+    # g_c – вектор связей с антенками в GHz/V
     
     El = np.copy(Elin)
     Ec = np.copy(Ecin)
-    
     n = Ec.shape[0]
+    
+    flag = False
+    
+    if(S.any() == None):
+        S = np.diag(np.ones(n))
+    
+    if(g_v_in.any() == None):
+        g_v = np.zeros(n)
+    else:
+        flag = True
+        g_v = np.copy(g_v_in)
+    
     
     # заполняем обратную емкость InvC и индуктивность InvL
     InvC = np.zeros((n, n))
@@ -927,18 +939,29 @@ def ReverseQuantization(Elin, Ecin, S=np.asarray([])):
         
     L = np.linspace(0, 0, n)
     
-    # переведем C в удобный для чтения вид (вычтем C связей из диагонали)
+    C_v = np.zeros(n)
     
+    # высчитываем C_v
+    if(flag):
+        
+        S_inv = np.linalg.inv(S)
+        C_v = Fq*C@S_inv@g_v*1e9
+    
+    # переведем C в удобный для чтения вид (вычтем C связей из диагонали)
     
     for i in range(n):
         
         # также вернем L
         if(InvL[i, i] != 0):
-            L[i] = 1/InvL[i, i] 
+            L[i] = 1/InvL[i, i]
         else:
             L[i] = 99999999
         
-        for j in range(i + 1, n):      
+        for j in range(i + 1, n):    
+            
+            # вычитаем антенку
+            C[j, j] -= C_v[j]
+            
             if(C[i, j]!=0):
                 C[j, i] = 0
                 C[i, j] = -C[i, j]
@@ -949,20 +972,35 @@ def ReverseQuantization(Elin, Ecin, S=np.asarray([])):
     
     # на выходе емкости в fF и индуктивности в nH
     
-    return(L, C)
+    if(flag):
+        return(L, C, C_v)
+    else:
+        return(L, C)
 
 
-def ForwardQuantization(Lin, Cin, S=np.asarray([])):
+def ForwardQuantization(Lin, Cin, S=np.asarray([None]), C_v_in=np.asarray([None])):
     # C – матрица nxn с емкостями
     # S – матрица перехода от реальных потоков к модельным
+    # C_v – вектор разм. n из антенковых ёмкостей на iый узел (каждую отдельную антенку нужно считать независимо)
     
     L = np.copy(Lin)
     C = np.copy(Cin)
+    
+    if(C_v_in.any() == None):
+        C_v = np.zeros(L.shape[0])
+    else:
+        C_v = np.copy(C_v_in)
+        
+    if(S.any() == None):
+        S = np.diag(np.ones(L.shape[0]))
     
     n = L.shape[0]
     InvL = np.zeros((n, n))
     # заполним нормльно матрицы
     for i in range(n):
+        
+        C[i, i] += C_v[i]
+        
         InvL[i, i] = 1/L[i]
         for j in range(n):
             if(i < j and C[i, j]!=0):
@@ -970,20 +1008,22 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
                 
                 C[j, i] = C[i, j] = - C[i, j]
                 
-                C[i, i] = C[i, i] + abs(C[i, j])
-                C[j, j] = C[j, j] + abs(C[i, j])
+                C[i, i] += abs(C[i, j])
+                C[j, j] += abs(C[i, j])
     
     
     # переходим к модельной цепи заменами
-    if(S.shape[0] != 0):
-        St = np.copy(S)
-        St = np.linalg.inv(St)
-        
-        C = np.transpose(St) @ C @ St
-        InvL = np.transpose(St) @ InvL @ St
-        
+    St = np.copy(S)
+    St = np.linalg.inv(St)
+
+    C_original = np.copy(C)
+    C = np.transpose(St) @ C @ St
+    InvL = np.transpose(St) @ InvL @ St
+    
     # находим матрицу энергий
     CInv = np.linalg.inv(C)
+    if(C_v_in.any() != 0):
+        CInv_or = np.linalg.inv(C_original)
     
     Ec = np.zeros((n, n))
     El = np.zeros(n)
@@ -998,10 +1038,12 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([])):
             elif(j > i):
                 Ec[i, j] = Ec[j, i] = 2*e/Fq * CInv[i, j] * 10**6
                 Ec[j, i] = 0
-    
-    
-    return(El, Ec)
-
+    if(C_v_in.any() == None):
+        return(El, Ec)
+    else:
+        # находим множители связи с антенкой g_v*V_in = g, g_v – GHz/V
+        g_v = S@CInv_or@C_v_in/Fq/1e9
+        return(El, Ec, g_v)
 
 def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, targetC=np.asarray(None)):
     # энергии в ГГц!!!, a С в фФ
