@@ -5,6 +5,7 @@ import scipy.optimize
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
+import numdifftools as nd
 from scipy.optimize import root
 from scipy.interpolate import interp1d
 from scipy.sparse.linalg import eigsh
@@ -28,6 +29,66 @@ d=2*10**(-9)
 Z0=50
 j=0.5*10**6
 S=(1000*500)*10**(-18)
+
+
+
+
+
+def parabolic_fit(X_in, Y_in, bounds, maxiter=300, no_local_search=False, x0=None):
+    #annealing based parabolic fitter
+    
+    X = np.asarray(X_in)
+    Y = np.asarray(Y_in)
+    # model A*(x - x_0)**2 + B**2
+    def loss(x):
+        
+        a = x[0]
+        b = x[1]
+        c = x[2]
+    
+        return np.sum((Y - a*X**2 - b*X - c)**2)
+    
+    # оптимизируем
+    sol = sc.optimize.dual_annealing(loss, bounds=bounds, 
+                                     maxiter=maxiter,
+                                     no_local_search=no_local_search,
+                                     x0=x0)
+    ans = sol.x
+    
+    hess = nd.Hessian(loss, step=1e-4, method='central', order=2)(ans)
+    # аналогично scipy.optimize.curve_fit
+    cov = np.linalg.inv(hess)*sol.fun/(X.shape[0] - ans.shape[0]) * 2
+
+    return ans, cov
+    
+
+def linear_regression_fit(X_in, Y_in):
+    # analytical solver for linear regression problem X_in.shape[0] -> dots, X_in.shape[1] -> dimensions (constant is included)
+    
+    Y = np.copy(np.asarray(Y_in))
+    X_0 = np.copy(np.asarray(X_in))
+    
+    if(len(X_0.shape) == 1):
+        
+        X = np.ones((X_0.shape[0], 2))
+        X[:,1] = X_0
+        
+    else:
+    
+        X = np.ones((X_0.shape[0], X_0.shape[1] + 1))
+        X[:,1:] = X_0
+    
+    tmp = np.einsum('mi,mk->ik', X, X)
+    tmp = np.linalg.inv(tmp)
+    tmp = np.einsum('ik,nk->in', tmp, X)
+    
+    beta = np.einsum('in,n->i', tmp, Y)
+        
+    mse = np.sqrt(np.sum((Y - np.einsum('k,ik->i', beta, X))**2))/Y.shape[0]
+
+    return (beta, mse)
+
+
 
 def dagger(a):
     return np.conjugate(a.transpose())
