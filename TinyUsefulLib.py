@@ -31,11 +31,30 @@ j=0.5*10**6
 S=(1000*500)*10**(-18)
 
 
+def index_reshape(index, shape_in):
+    # rebuild index in tensor product space A@B@.. into N coordinat 
+    # representation i -> (a_i, b_i, ...) 
+    # shape_in = (dim(A), dim(B), ...)
+    
+    shape = np.copy(np.asarray(shape_in))
+    coord = np.zeros(shape.shape[0], int)
 
+    shape[0] = 1
+    
+    for it in range(shape.shape[0]):
+
+        d_prod = np.prod(shape)
+        coord[it] = int(index//d_prod)
+        index -= coord[it]*d_prod
+        
+        if(it < shape.shape[0] - 1):
+            shape[it + 1] = 1
+    
+    return coord
 
 
 def parabolic_fit(X_in, Y_in, bounds, maxiter=300, no_local_search=False, x0=None):
-    #annealing based parabolic fitter
+    # annealing based parabolic fitter
     
     X = np.asarray(X_in)
     Y = np.asarray(Y_in)
