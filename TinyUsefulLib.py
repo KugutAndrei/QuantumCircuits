@@ -1489,7 +1489,10 @@ def FluxoniumFitter(specDots, borders,
     
     return ans
 
-def nonlinearAnihilator(T, E):
+
+def pseudoosc_amplitude_decay_operator(T, E):
+    # create a jump operator for N lvl system in similar way with annihilation oscillator operator
+    # E – spectrum, T – decay time in ns
     size = E.shape[0]
     a = np.zeros((size, size), dtype=complex)
     
