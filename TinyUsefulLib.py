@@ -31,6 +31,79 @@ j=0.5*10**6
 S=(1000*500)*10**(-18)
 
 
+# theoretical equations
+def josephson_energy(R, delta=204e-6*e):
+    return delta/8/e**2/R/1e9
+
+def josephson_resistance(Ej, delta=204e-6*e):
+    return delta/8/e**2/Ej/1e9
+
+def oscillator_Ec(freq, Z=50):
+    # calcs Ec(freq, Z) in GHz
+    # Z - impedance
+    return 2*np.pi*e/Fq * Z * freq
+
+def oscillator_freq(Ec, Z=50):
+    # calcs freq(Ec, Z) in GHz
+    # Z - impedance
+    return Ec/(2*np.pi*e/Fq * Z)
+
+def oscillator_El(freq, Z=50):
+    # calcs El(freq, Z) in GHz
+    # Z - impedance
+    return freq/Z*Fq/8/np.pi/e
+
+def oscillator_g_a(g_n=None, g_phi=None, Z=50):
+    # g_n - g for coopers pairs representation V = g*n_o*n
+    # g_phi - g for coopers pairs representation V = g*phi_o*phi
+    # Z - impedance
+    
+    if(g_n!=None):
+        return 2*np.sqrt(2)*g_n * e * np.sqrt(Z/hpl)
+    elif(g_phi!=None):
+        return g_phi/(np.sqrt(2)* e * np.sqrt(Z/hpl))
+    else:
+        assert True
+
+def oscillator_g_n(g_a, Z=50):
+    # g_a - g for eigenenergies representation V = g*(a + a^+)*n
+    # Z - impedance
+    return g_a/(2*np.sqrt(2) * e * np.sqrt(Z/hpl))
+
+def oscillator_g_phi(g_a, Z=50):
+    # g_a - g for eigenenergies representation V = i*g*(a - a^+)*phi
+    # Z - impedance
+    return g_a*(np.sqrt(2) * e * np.sqrt(Z/hpl))
+
+def oscillator_Z(freq=None, C=None, Ec=None, El=None):
+    # freq in GHz
+    # C in fF
+    if(freq!=None and C!=None):
+        freq *= 1e9
+        C *= 1e-15
+        return 1/(2*np.pi*freq*C)
+    elif(Ec!=None and El!=None):
+        return Fq/(4*np.pi*e)*np.sqrt(Ec/El)
+        
+#######################
+
+
+def SQUID_flux_finder(Ej1, Ej2, Ej):
+    # finde proper flux point for SQUID to obtain
+    # appropriate value of effective Ej
+    # (based on equation from quantum engenering guide)
+    
+    if(Ej1 + Ej2 < Ej or abs(Ej1 - Ej2) > Ej):
+        
+        raise ValueError('Unreachable target Ej value')
+    
+    gamma = Ej2/Ej1
+    d = (gamma - 1)/(gamma + 1)
+    Phi = np.arcsin(np.sqrt((Ej**2 - (Ej1 + Ej2)**2)/(Ej1 + Ej2)**2/(d**2 - 1)))
+
+    return Phi/np.pi
+
+
 def index_reshape(index, shape_in):
     # rebuild index in tensor product space A@B@.. into N coordinat 
     # representation i -> (a_i, b_i, ...) 
@@ -263,9 +336,9 @@ def StatesRepr(state, bSize, size):
     plt.show()
 
 
-def Oscillator(omega, numOfLevels=100):
+def Oscillator(freq, numOfLevels=100):
     # собственные значения энергии
-    eigEnergies = np.linspace(0, omega * (numOfLevels - 1), numOfLevels)
+    eigEnergies = np.linspace(0, freq * (numOfLevels - 1), numOfLevels)
 
     # оператор уничтожения
     a = np.zeros((numOfLevels, numOfLevels), dtype=complex)
@@ -353,7 +426,7 @@ def Fluxonium(Ej, El, Ec, gridSize=None, numOfLvls=5, F=0, Q=0):
         gridSize = int(1.5*numOfLvls) + 20
 
     nu=2*np.sqrt(El*Ec)
-    _, at, a = Oscillator(omega=nu, numOfLevels=gridSize)
+    _, at, a = Oscillator(nu, numOfLevels=gridSize)
     one = np.diag(np.ones(gridSize))
     phi = -1j*(Ec/4/El)**0.25*(at - a)
     q = (El/4/Ec)**0.25*(at + a)
@@ -1202,7 +1275,7 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, target
     return(finalAns, C)
 
 
-def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0, targetEc=np.asarray(None)):
+def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, targetEc=np.asarray(None)):
     # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     
@@ -1258,34 +1331,7 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, method=0,
         # генерируем x0
         x0 = np.random.rand(dim) * 2*np.asarray(valueSpace) - np.asarray(valueSpace)
         # оптимизируем
-        if(method == 0):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='Nelder-Mead')
-        elif(method == 1):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='Powell')
-        elif(method == 2):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='CG')
-        elif(method == 3):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='BFGS')
-        elif(method == 4):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='Newton-CG')
-        elif(method == 5):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='L-BFGS-B')
-        elif(method == 6):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='TNC')
-        elif(method == 7):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='COBYLA')
-        elif(method == 8):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='SLSQP')
-        elif(method == 9):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-constr')
-        elif(method == 10):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='dogleg')
-        elif(method == 11):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-ncg')
-        elif(method == 12):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-krylov')
-        elif(method == 13):
-            sol = minimize(loss, x0=x0, bounds=bounds, method='trust-exact')
+        sol = minimize(loss, x0=x0, bounds=bounds)
         
         
         if(sol.success != True):
