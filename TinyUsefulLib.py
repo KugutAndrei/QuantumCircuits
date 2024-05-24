@@ -139,7 +139,8 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                 leakage_delta.append(delta_f)
 
     if(mod==0):
-        sort = np.argsort(np.asarray(leakage_k**2/leakage_delta))
+        tmp = np.asarray(leakage_k)**2/np.asarray(leakage_delta)
+        sort = np.argsort(np.asarray(tmp))
         sort = np.flip(sort)
 
     if(mod==1):
