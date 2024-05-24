@@ -87,6 +87,82 @@ def oscillator_Z(freq=None, C=None, Ec=None, El=None):
         
 #######################
 
+def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod=0):
+
+    # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
+    # mod 1: search with border[0] – minimal value of k and border[1] – maximum transition's frequencies delta
+
+    # output: leakage_st[0] – init leakage states, leakage_st[1] – target leakage states, leakage_param[2] – k**2/delta, leakage_param[0] – k, leakage_param[1] – delta
+    
+    other_st_list = np.asarray(other_st_list)
+    full_st_list = np.zeros((2 + other_st_list.shape[0]), int)
+    full_st_list[0] = init_st
+    full_st_list[1] = target_st
+    full_st_list[2:] = other_st_list
+
+    m_0 = abs(pert_oper[init_st, target_st])
+    f_0 = abs(spectrum[init_st] - spectrum[target_st])
+
+    # arrays for output
+    leakage_init = []
+    leakage_target = []
+    leakage_k = []
+    leakage_delta = []
+
+    
+    # transitions init -> fin
+    for init in full_st_list:
+        for fin in range(spectrum.shape[0]):
+
+            if(fin == init):
+                continue
+
+            m = abs(pert_oper[init, fin])
+            k = m/m_0
+            delta_f = abs(abs(spectrum[init] - spectrum[fin]) - f_0)
+
+            if(delta_f == 0):
+                continue
+
+            if(mod==0 and k**2/delta_f > border):
+                    
+                leakage_init.append(init)
+                leakage_target.append(fin)
+                leakage_k.append(k)
+                leakage_delta.append(delta_f)
+
+            elif(mod==1 and k > border[0] and delta_f < border[1]):
+                
+                leakage_init.append(init)
+                leakage_target.append(fin)
+                leakage_k.append(k)
+                leakage_delta.append(delta_f)
+
+    if(mod==0):
+        sort = np.argsort(np.asarray(leakage_k))
+        sort = np.flip(sort)
+
+    if(mod==1):
+        sort = np.argsort(np.asarray(leakage_delta))
+
+    leakage_st = np.zeros((sort.shape[0], 2), int)
+    leakage_param = np.zeros((sort.shape[0], 3))
+    string_list = []
+    
+    for i in range(sort.shape[0]):
+        
+        leakage_st[i, 0] = leakage_init[sort[i]]
+        leakage_st[i, 1] = leakage_target[sort[i]]
+        
+        leakage_param[i, 0] = leakage_k[sort[i]]
+        leakage_param[i, 1] = leakage_delta[sort[i]]
+        
+        leakage_param[i, 2] = leakage_param[i, 0]**2/leakage_param[i, 1]
+
+        string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}".format(leakage_st[i, 0], leakage_st[i, 1], leakage_param[i, 0], leakage_param[i, 1], leakage_param[i, 2]))
+    
+    return leakage_st, leakage_param, string_list
+
 
 def SQUID_flux_finder(Ej1, Ej2, Ej):
     # finde proper flux point for SQUID to obtain
