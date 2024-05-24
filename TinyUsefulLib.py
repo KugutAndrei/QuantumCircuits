@@ -114,7 +114,12 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
     for init in full_st_list:
         for fin in range(spectrum.shape[0]):
 
-            if(fin == init):
+            flag = False
+            for st in full_st_list:
+                if(fin == st):
+                    flag = True
+                
+            if(flag):
                 continue
 
             m = abs(pert_oper[init, fin])
