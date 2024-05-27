@@ -90,9 +90,11 @@ def oscillator_Z(freq=None, C=None, Ec=None, El=None):
 def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod=0):
 
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
-    # mod 1: search with border[0] – minimal value of k and border[1] – maximum transition's frequencies delta
+    # mod 1: search based on k**2/delta**2, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta**2)_min
+    # mod 2: search with border[0] – minimal value of k and border[1] – maximum transition's frequencies delta
+    
 
-    # output: leakage_st[0] – init leakage states, leakage_st[1] – target leakage states, leakage_param[2] – k**2/delta, leakage_param[0] – k, leakage_param[1] – delta
+    # output: leakage_st[0] – init leakage states, leakage_st[1] – target leakage states; leakage_param[0] – k, leakage_param[1] – delta
     
     other_st_list = np.asarray(other_st_list)
     full_st_list = np.zeros((2 + other_st_list.shape[0]), int)
@@ -135,8 +137,15 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                 leakage_target.append(fin)
                 leakage_k.append(k)
                 leakage_delta.append(delta_f)
+                
+            elif(mod==1 and k**2/delta_f**2 > border):
+                    
+                leakage_init.append(init)
+                leakage_target.append(fin)
+                leakage_k.append(k)
+                leakage_delta.append(delta_f)
 
-            elif(mod==1 and k > border[0] and delta_f < border[1]):
+            elif(mod==2 and k > border[0] and delta_f < border[1]):
                 
                 leakage_init.append(init)
                 leakage_target.append(fin)
@@ -147,12 +156,17 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         tmp = np.asarray(leakage_k)**2/np.asarray(leakage_delta)
         sort = np.argsort(np.asarray(tmp))
         sort = np.flip(sort)
-
+        
     if(mod==1):
+        tmp = np.asarray(leakage_k)**2/np.asarray(leakage_delta)**2
+        sort = np.argsort(np.asarray(tmp))
+        sort = np.flip(sort)
+
+    if(mod==2):
         sort = np.argsort(np.asarray(leakage_delta))
 
     leakage_st = np.zeros((sort.shape[0], 2), int)
-    leakage_param = np.zeros((sort.shape[0], 3))
+    leakage_param = np.zeros((sort.shape[0], 2))
     string_list = []
     
     for i in range(sort.shape[0]):
@@ -163,9 +177,14 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         leakage_param[i, 0] = leakage_k[sort[i]]
         leakage_param[i, 1] = leakage_delta[sort[i]]
         
-        leakage_param[i, 2] = leakage_param[i, 0]**2/leakage_param[i, 1]
+        leakage_param[i, 0]**2/leakage_param[i, 1]
 
-        string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}".format(leakage_st[i, 0], leakage_st[i, 1], leakage_param[i, 0], leakage_param[i, 1], leakage_param[i, 2]))
+        string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}, k**2/∆**2={5}".format(leakage_st[i, 0], 
+                                                                                         leakage_st[i, 1], 
+                                                                                         leakage_param[i, 0], 
+                                                                                         leakage_param[i, 1], 
+                                                                                         leakage_param[i, 0]**2/leakage_param[i, 1], 
+                                                                                         leakage_param[i, 0]**2/leakage_param[i, 1]**2))
     
     return leakage_st, leakage_param, string_list
 
