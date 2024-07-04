@@ -172,7 +172,7 @@ class VirtQ:
 
     
     
-    def scan_fidelitySE(self, calc_H_as_time_function, psi_flag = False, progress_bar = True, solver='expm'):
+    def scan_fidelitySE(self, calc_H_as_time_function, psi_flag = False, fid_flag = False, progress_bar = True, solver='expm'):
         """
         Calculate evolution of Schedinger equation under multiple Hamiltonians (multiple drives)
 
@@ -186,8 +186,9 @@ class VirtQ:
             self.calc_H_as_time_function = calc_H_as_time_function
         psi = tf.tile(self.initstate[tf.newaxis],\
                       (self.calc_timedepH(calc_H_as_time_function(self.timelist[0]), self.timelist[0]).shape[0], 1, 1))
-        resultFid = []
-        resultFid.append(self.calc_fidelity_psi(psi))
+        if fid_flag:
+            resultFid = []
+            resultFid.append(self.calc_fidelity_psi(psi))
         if psi_flag:
             psilist = []
             psilist.append(psi)
@@ -204,11 +205,15 @@ class VirtQ:
             resultFid.append(self.calc_fidelity_psi(psi))
             if psi_flag:
                 psilist.append(psi)
-        if psi_flag:
+        if(psi_flag and fid_flag):
             return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2)),\
                    tf.transpose(tf.convert_to_tensor(psilist, psi.dtype), (1,0,2,3))
+        elif(fid_flag):
+            return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2))
+        elif(psi_flag):
+            return tf.transpose(tf.convert_to_tensor(psilist, psi.dtype), (1,0,2,3))
         else:
-            return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2)), psi
+            return psi
 
 
 
