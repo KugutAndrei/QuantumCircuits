@@ -202,7 +202,8 @@ class VirtQ:
                                      self.timelist[i]-self.timelist[i-1])
             elif solver == 'RK4':
                 psi = self.__solveSE_RK4(psi, self.timelist[i], self.timelist[i] - self.timelist[i - 1])
-            resultFid.append(self.calc_fidelity_psi(psi))
+            if fid_flag:
+                resultFid.append(self.calc_fidelity_psi(psi))
             if psi_flag:
                 psilist.append(psi)
         if(psi_flag and fid_flag):

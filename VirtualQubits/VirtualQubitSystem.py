@@ -299,7 +299,8 @@ class VirtualQubitSystem:
             rho = self.__solveME(rho, self.timelist[i-1], self.timelist[i]-self.timelist[i-1])
 #             if np.abs(tf.linalg.trace(rho)[0]-1)>0.1:
 #                 print('Farewell! Time:', self.timelist[i], tf.linalg.trace(rho))
-            resultFid.append(self.calc_fidelity_rho(rho))
+            if fid_flag:
+                resultFid.append(self.calc_fidelity_rho(rho))
             if rho_flag:
                 rholist.append(rho)
         if rho_flag:
