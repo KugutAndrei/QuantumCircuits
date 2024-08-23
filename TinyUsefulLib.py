@@ -87,6 +87,19 @@ def oscillator_Z(freq=None, C=None, Ec=None, El=None):
         
 #######################
 
+
+def kron(*opers):
+
+    prod = np.kron(opers[0], opers[1])
+
+    for n in range(len(opers) - 2):
+
+        prod =np.kron(prod, opers[n + 2])
+
+    return prod
+    
+
+
 def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod=0):
 
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
