@@ -100,10 +100,8 @@ def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=1):
         if(opt.fun > 0):
             print("can't kill zz")
             return 0, 0
-        opt_r = 
-        root(loss, x0=center+1e-3)
-        opt_l = 
-        root(loss, x0=center-1e-3)
+        opt_r = root(loss, x0=center+1e-3)
+        opt_l = root(loss, x0=center-1e-3)
 
     else:
         opt = minimize(loss, x0=[0], bounds=[(0, 0.2)])
@@ -111,10 +109,8 @@ def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=1):
         if(opt.fun > 0):
             print("can't kill zz")
             return 0, 0
-        opt_r = 
-        root(loss, x0=center+1e-3)
-        opt_l = 
-        root(loss, x0=center-1e-3)
+        opt_r = root(loss, x0=center+1e-3)
+        opt_l = root(loss, x0=center-1e-3)
 
 
     g_l = opt_l.x[0]
