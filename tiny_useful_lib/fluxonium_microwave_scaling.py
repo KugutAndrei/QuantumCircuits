@@ -16,7 +16,7 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FuncFormatter
 from scipy.optimize import minimize
 from scipy.linalg import cosm, expm, sqrtm, det
-import main
+from QuantumCircuits.tiny_useful_lib import main
 
 
 # fun for searching of proper fluxonium 
