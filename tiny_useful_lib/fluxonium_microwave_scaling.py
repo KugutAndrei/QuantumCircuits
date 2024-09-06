@@ -15,6 +15,7 @@ from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FuncFormatter
 from scipy.optimize import minimize
+from scipy.optimize import dual_annealing
 from scipy.linalg import cosm, expm, sqrtm, det
 from QuantumCircuits.tiny_useful_lib import main
 
@@ -27,9 +28,9 @@ def fluxonium_coop(f01, alpha, bounds=[(2, 100), (0.4, 1.5), (0.2, 6)]):
         eigval, _, q = tul.Fluxonium(x[0], x[1], x[2], gridSize=60, numOfLvls=3, F=0)
         return (eigval[1] - f01)**2 + (eigval[2] - 2*eigval[1] - alpha)**2 - 0.001*abs(q[0, 1])**2
     
-    opt1 = scp.optimize.minimize(fun, x0=[4, 1.5, 4], bounds=bounds)
-    opt2 = scp.optimize.minimize(fun, x0=[3, 1, 4], bounds=bounds)
-    opt3 = scp.optimize.minimize(fun, x0=[4, 1, 6], bounds=bounds)
+    opt1 = minimize(fun, x0=[4, 1.5, 4], bounds=bounds)
+    opt2 = minimize(fun, x0=[3, 1, 4], bounds=bounds)
+    opt3 = minimize(fun, x0=[4, 1, 6], bounds=bounds)
 
     loss = np.asarray([opt1.fun, opt2.fun, opt3.fun])
     x = np.asarray([opt1.x, opt2.x, opt3.x])
@@ -42,9 +43,9 @@ def fluxonium_search(f01, f12, f03, bounds=[(2, 100), (0.5, 1.5), (0.2, 6)]):
         eigval, _, _ = tul.Fluxonium(x[0], x[1], x[2], F=0.5)
         return (eigval[1] - f01)**2 + (eigval[2] - eigval[1] - f12)**2 + (eigval[3] - f03)**2
     
-    opt1 = scp.optimize.minimize(fun, x0=[4, 1.5, 4], bounds=bounds)
-    opt2 = scp.optimize.minimize(fun, x0=[3, 1, 4], bounds=bounds)
-    opt3 = scp.optimize.minimize(fun, x0=[4, 1, 6], bounds=bounds)
+    opt1 = minimize(fun, x0=[4, 1.5, 4], bounds=bounds)
+    opt2 = minimize(fun, x0=[3, 1, 4], bounds=bounds)
+    opt3 = minimize(fun, x0=[4, 1, 6], bounds=bounds)
     loss = np.asarray([opt1.fun, opt2.fun, opt3.fun])
     x = np.asarray([opt1.x, opt2.x, opt3.x])
     
@@ -59,7 +60,7 @@ def transmon_coop(f01, alpha, bounds=[(2, 100), (0.01, 3)]):
         eigval, _, q = tul.Transmon(x[0], 0, x[1], numOfLvls=5)
         return (eigval[1] - f01)**2 + (eigval[2] - 2*eigval[1] - alpha)**2
     
-    opt1 = scp.optimize.minimize(fun, x0=[40, 1.5], bounds=bounds)
+    opt1 = minimize(fun, x0=[40, 1.5], bounds=bounds)
     loss = np.asarray([opt1.fun])
     x = np.asarray([opt1.x])
     
@@ -94,22 +95,26 @@ def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=1):
 
         
     if(regime):
-        opt = scp.optimize.minimize(loss, x0=[0], bounds=[(-0.2, 0)])
+        opt = minimize(loss, x0=[0], bounds=[(-0.2, 0)])
         center = opt.x[0]
         if(opt.fun > 0):
             print("can't kill zz")
             return 0, 0
-        opt_r = scp.optimize.root(loss, x0=center+1e-3)
-        opt_l = scp.optimize.root(loss, x0=center-1e-3)
+        opt_r = 
+        root(loss, x0=center+1e-3)
+        opt_l = 
+        root(loss, x0=center-1e-3)
 
     else:
-        opt = scp.optimize.minimize(loss, x0=[0], bounds=[(0, 0.2)])
+        opt = minimize(loss, x0=[0], bounds=[(0, 0.2)])
         center = opt.x[0]
         if(opt.fun > 0):
             print("can't kill zz")
             return 0, 0
-        opt_r = scp.optimize.root(loss, x0=center+1e-3)
-        opt_l = scp.optimize.root(loss, x0=center-1e-3)
+        opt_r = 
+        root(loss, x0=center+1e-3)
+        opt_l = 
+        root(loss, x0=center-1e-3)
 
 
     g_l = opt_l.x[0]
@@ -244,7 +249,7 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=1, regular=0.0
 
         return (abs(leakage_param[0, 1]) - gap_target)**2 + (regular*g_c_1 + regular*g_c_2)**2
 
-    sol = scp.optimize.dual_annealing(gap_loss, bounds=bounds, maxiter=maxiter)
+    sol = dual_annealing(gap_loss, bounds=bounds, maxiter=maxiter)
     g_c_1 = sol.x[0]
     g_c_2 = sol.x[1]
 
@@ -262,7 +267,7 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=1, regular=0.0
         
         return zz**2
 
-    sol = scp.optimize.minimize(zz_loss, x0=0.01)
+    sol = minimize(zz_loss, x0=0.01)
     g_qq = sol.x[0]
 
     # емкостно смешиваем 3 подсистемы системы
