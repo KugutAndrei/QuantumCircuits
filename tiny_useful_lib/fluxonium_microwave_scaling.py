@@ -25,7 +25,7 @@ from QuantumCircuits.tiny_useful_lib import main
 def fluxonium_coop(f01, alpha, bounds=[(2, 100), (0.4, 1.5), (0.2, 6)]):
 
     def fun(x):
-        eigval, _, q = tul.Fluxonium(x[0], x[1], x[2], gridSize=60, numOfLvls=3, F=0)
+        eigval, _, q = Fluxonium(x[0], x[1], x[2], gridSize=60, numOfLvls=3, F=0)
         return (eigval[1] - f01)**2 + (eigval[2] - 2*eigval[1] - alpha)**2 - 0.001*abs(q[0, 1])**2
     
     opt1 = minimize(fun, x0=[4, 1.5, 4], bounds=bounds)
@@ -40,7 +40,7 @@ def fluxonium_coop(f01, alpha, bounds=[(2, 100), (0.4, 1.5), (0.2, 6)]):
 def fluxonium_search(f01, f12, f03, bounds=[(2, 100), (0.5, 1.5), (0.2, 6)]):
 
     def fun(x):
-        eigval, _, _ = tul.Fluxonium(x[0], x[1], x[2], F=0.5)
+        eigval, _, _ = Fluxonium(x[0], x[1], x[2], F=0.5)
         return (eigval[1] - f01)**2 + (eigval[2] - eigval[1] - f12)**2 + (eigval[3] - f03)**2
     
     opt1 = minimize(fun, x0=[4, 1.5, 4], bounds=bounds)
@@ -57,7 +57,7 @@ def fluxonium_search(f01, f12, f03, bounds=[(2, 100), (0.5, 1.5), (0.2, 6)]):
 def transmon_coop(f01, alpha, bounds=[(2, 100), (0.01, 3)]):
 
     def fun(x):
-        eigval, _, q = tul.Transmon(x[0], 0, x[1], numOfLvls=5)
+        eigval, _, q = Transmon(x[0], 0, x[1], numOfLvls=5)
         return (eigval[1] - f01)**2 + (eigval[2] - 2*eigval[1] - alpha)**2
     
     opt1 = minimize(fun, x0=[40, 1.5], bounds=bounds)
@@ -78,14 +78,14 @@ def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=1):
         (spect_C2, phi_C2, q_C2) = map(np.copy, coop_2)
         
         # емкостно смешиваем 3 подсистемы системы
-        (mixEnrg, mixStates, mixH) = tul.MixOfThreeSys(spect_C1, spect_F, spect_C2,
+        (mixEnrg, mixStates, mixH) = MixOfThreeSys(spect_C1, spect_F, spect_C2,
                                                         q12=q_C1, q13=q_C1,
                                                         q21=q_F, q23=q_F,
                                                         q32=q_C2, q31=q_C2,
                                                         g12=g1, g23=g2, g31=g, numOfLvls=150, project=True)
         
         
-        key, purity = tul.StatesPurity(mixStates, (spect_C1.shape[0], spect_F.shape[0], spect_C2.shape[0]))
+        key, purity = StatesPurity(mixStates, (spect_C1.shape[0], spect_F.shape[0], spect_C2.shape[0]))
 
         if(regime):
             return (mixEnrg[key[1, 1, 1]] - mixEnrg[key[0, 1, 1]] - mixEnrg[key[1, 1, 0]] + mixEnrg[key[0, 1, 0]])*1e6
@@ -121,24 +121,24 @@ def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=1):
     (spect_C2, phi_C2, q_C2) = coop_2
     
     # емкостно смешиваем 3 подсистемы системы
-    (mixEnrg_l, mixStates, mixH) = tul.MixOfThreeSys(spect_C1, spect_F, spect_C2,
+    (mixEnrg_l, mixStates, mixH) = MixOfThreeSys(spect_C1, spect_F, spect_C2,
                                                     q12=q_C1, q13=q_C1,
                                                     q21=q_F, q23=q_F,
                                                     q32=q_C2, q31=q_C2,
                                                     g12=g1, g23=g2, g31=g_l, numOfLvls=150, project=True)
     
     
-    key_l, purity_l = tul.StatesPurity(mixStates, (spect_C1.shape[0], spect_F.shape[0], spect_C2.shape[0]))
+    key_l, purity_l = StatesPurity(mixStates, (spect_C1.shape[0], spect_F.shape[0], spect_C2.shape[0]))
 
     # емкостно смешиваем 3 подсистемы системы
-    (mixEnrg_r, mixStates, mixH) = tul.MixOfThreeSys(spect_C1, spect_F, spect_C2,
+    (mixEnrg_r, mixStates, mixH) = MixOfThreeSys(spect_C1, spect_F, spect_C2,
                                                     q12=q_C1, q13=q_C1,
                                                     q21=q_F, q23=q_F,
                                                     q32=q_C2, q31=q_C2,
                                                     g12=g1, g23=g2, g31=g_r, numOfLvls=150, project=True)
     
     
-    key_r, purity_r = tul.StatesPurity(mixStates, (spect_C1.shape[0], spect_F.shape[0], spect_C2.shape[0]))
+    key_r, purity_r = StatesPurity(mixStates, (spect_C1.shape[0], spect_F.shape[0], spect_C2.shape[0]))
 
     if(regime):
 
@@ -169,7 +169,7 @@ def zz_far_QC(coop_1, qubit_1, coop_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
     
     (mixEnrg_in, mixStates, mixH,
-     opersC1, opersQ1, opersC2) = tul.MixOfThreeSys(spect_C1, spect_Q1, spect_C2,
+     opersC1, opersQ1, opersC2) = MixOfThreeSys(spect_C1, spect_Q1, spect_C2,
                                                     q12=q_C1, q13=q_C1,
                                                     q21=q_Q1, q23=q_Q1,
                                                     q32=q_C2, q31=q_C2,
@@ -180,16 +180,16 @@ def zz_far_QC(coop_1, qubit_1, coop_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_
                                                     g23=g_q1_c2, g31=g_c1_c2, numOfLvls=spect_C1.shape[0]*spect_Q1.shape[0]*spect_C2.shape[0], project=True)
     
     
-    key_in, purity_in, stlist_in = tul.StatesPurity(mixStates, (spect_C1.shape[0], spect_Q1.shape[0], spect_C2.shape[0]), stList=True, dirtyBorder=0.0001)
+    key_in, purity_in, stlist_in = StatesPurity(mixStates, (spect_C1.shape[0], spect_Q1.shape[0], spect_C2.shape[0]), stList=True, dirtyBorder=0.0001)
     
     q_C2_new = opersC2[1]
     q_Q1_new = opersQ1[1]
     
     # mix of CQC and Q
-    (mixEnrg, mixStates, mixH) = tul.MixOfTwoSys(mixEnrg_in, spect_Q2, g_q1_q2*q_Q1_new + g_q2_c2*q_C2_new, 
+    (mixEnrg, mixStates, mixH) = MixOfTwoSys(mixEnrg_in, spect_Q2, g_q1_q2*q_Q1_new + g_q2_c2*q_C2_new, 
                                                  q_Q2, g=1, numOfLvls=mixEnrg_in.shape[0]*spect_Q2.shape[0], project=True)
     
-    key, purity, stlist = tul.StatesPurity(mixStates, (mixEnrg_in.shape[0], spect_Q2.shape[0]), stList=True, dirtyBorder=0.0001)
+    key, purity, stlist = StatesPurity(mixStates, (mixEnrg_in.shape[0], spect_Q2.shape[0]), stList=True, dirtyBorder=0.0001)
 
     
     if(regime==0):
@@ -221,7 +221,7 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=1, regular=0.0
         g_c_2 = x[1]
         
         # емкостно смешиваем 3 подсистемы системы
-        (mixEnrg, mixStates, mixH, opersC) = tul.MixOfThreeSys(spect_Q1, spect_C, spect_Q2,
+        (mixEnrg, mixStates, mixH, opersC) = MixOfThreeSys(spect_Q1, spect_C, spect_Q2,
                                                                 q12=q_Q1, q13=q_Q1,
                                                                 q21=q_C, q23=q_C,
                                                                 q32=q_Q2, q31=q_Q2,
@@ -232,14 +232,14 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=1, regular=0.0
         
         phi_C_mix = opersC[0]
         
-        key, purity, stlist = tul.StatesPurity(mixStates, (spect_Q1.shape[0], spect_C.shape[0], spect_Q2.shape[0]), stList=True)
+        key, purity, stlist = StatesPurity(mixStates, (spect_Q1.shape[0], spect_C.shape[0], spect_Q2.shape[0]), stList=True)
 
         if(regime):
-            _, leakage_param, _ = tul.trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], pert_oper=phi_C_mix,
+            _, leakage_param, _ = trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], pert_oper=phi_C_mix,
                                                                           spectrum=mixEnrg, border=0.2, 
                                                                           other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=1)
         else:
-            _, leakage_param, _ = tul.trans_isolation(init_st=0, target_st=key[0, 1, 0], pert_oper=phi_C_mix,
+            _, leakage_param, _ = trans_isolation(init_st=0, target_st=key[0, 1, 0], pert_oper=phi_C_mix,
                                                                           spectrum=mixEnrg, border=0.2, 
                                                                           other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=1)            
 
@@ -251,13 +251,13 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=1, regular=0.0
 
     def zz_loss(g_qq):
         # емкостно смешиваем 3 подсистемы системы
-        (mixEnrg, mixStates, mixH) = tul.MixOfThreeSys(spect_Q1, spect_C, spect_Q2,
+        (mixEnrg, mixStates, mixH) = MixOfThreeSys(spect_Q1, spect_C, spect_Q2,
                                                                 q12=q_Q1, q13=q_Q1,
                                                                 q21=q_C, q23=q_C,
                                                                 q32=q_Q2, q31=q_Q2,
                                                                 g12=g_c_1, g23=g_c_2, g31=g_qq, numOfLvls=min(200, spect_Q1.shape[0]*spect_Q2.shape[0]*spect_C.shape[0]), project=True)
         
-        key, purity, stlist = tul.StatesPurity(mixStates, (spect_Q1.shape[0], spect_C.shape[0], spect_Q2.shape[0]), stList=True)
+        key, purity, stlist = StatesPurity(mixStates, (spect_Q1.shape[0], spect_C.shape[0], spect_Q2.shape[0]), stList=True)
         zz = (mixEnrg[key[1, 0, 1]] - mixEnrg[key[0, 0, 1]] - mixEnrg[key[1, 0, 0]])*1e6
 
         
@@ -267,7 +267,7 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=1, regular=0.0
     g_qq = sol.x[0]
 
     # емкостно смешиваем 3 подсистемы системы
-    (mixEnrg, mixStates, mixH, opersC) = tul.MixOfThreeSys(spect_Q1, spect_C, spect_Q2,
+    (mixEnrg, mixStates, mixH, opersC) = MixOfThreeSys(spect_Q1, spect_C, spect_Q2,
                                                            q12=q_Q1, q13=q_Q1,
                                                            q21=q_C, q23=q_C,
                                                            q32=q_Q2, q31=q_Q2,
@@ -275,15 +275,15 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=1, regular=0.0
                                                            g12=g_c_1, g23=g_c_2, g31=g_qq, numOfLvls=min(200, spect_Q1.shape[0]*spect_Q2.shape[0]*spect_C.shape[0]), project=True)
     phi_C_mix = opersC[0]
     
-    key, purity, stlist = tul.StatesPurity(mixStates, (spect_Q1.shape[0], spect_C.shape[0], spect_Q2.shape[0]), stList=True)
+    key, purity, stlist = StatesPurity(mixStates, (spect_Q1.shape[0], spect_C.shape[0], spect_Q2.shape[0]), stList=True)
     zz = (mixEnrg[key[1, 0, 1]] - mixEnrg[key[0, 0, 1]] - mixEnrg[key[1, 0, 0]])*1e6
 
     if(regime):
-        _, leakage_param, _ = tul.trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], pert_oper=phi_C_mix,
+        _, leakage_param, _ = trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], pert_oper=phi_C_mix,
                                                                       spectrum=mixEnrg, border=0.2, 
                                                                       other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=1)
     else:
-        _, leakage_param, _ = tul.trans_isolation(init_st=0, target_st=key[0, 1, 0], pert_oper=phi_C_mix,
+        _, leakage_param, _ = trans_isolation(init_st=0, target_st=key[0, 1, 0], pert_oper=phi_C_mix,
                                                                       spectrum=mixEnrg, border=0.2, 
                                                                       other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=1)            
 
