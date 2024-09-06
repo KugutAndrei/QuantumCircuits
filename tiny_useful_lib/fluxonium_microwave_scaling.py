@@ -17,8 +17,7 @@ from matplotlib.ticker import FuncFormatter
 from scipy.optimize import minimize
 from scipy.optimize import dual_annealing
 from scipy.linalg import cosm, expm, sqrtm, det
-from QuantumCircuits.tiny_useful_lib import main
-
+from QuantumCircuits.tiny_useful_lib.main import *
 
 # fun for searching of proper fluxonium 
 
