@@ -194,14 +194,17 @@ def zz_far_QC(coop_1, qubit_1, coop_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_
     if(regime==0):
         
         zz = (mixEnrg[key[key_in[1, 0, 0], 1]] - mixEnrg[key[key_in[0, 0, 0], 1]] - mixEnrg[key[key_in[1, 0, 0], 0]])
-        pur = -100*(purity[key[key_in[1, 0, 0], 1]] + purity[key[key_in[1, 0, 0], 0]] + purity[key[key_in[0, 0, 0], 1]] - 3)/3
+        pur_1 = purity[key[key_in[1, 0, 0], 1]]
+        pur_2 = (purity[key[key_in[1, 0, 0], 0]] + purity[key[key_in[0, 0, 0], 1]])/2
 
     elif(regime==1):
 
         zz = (mixEnrg[key[key_in[1, 1, 0], 1]] - mixEnrg[key[key_in[0, 1, 0], 1]] - mixEnrg[key[key_in[1, 1, 0], 0]] + mixEnrg[key[key_in[0, 1, 0], 0]])
-        pur = -100*(purity[key[key_in[1, 1, 0], 1]] + purity[key[key_in[0, 1, 0], 1]] + purity[key[key_in[1, 1, 0], 0]] - 3)/3
+        pur_1 = purity[key[key_in[1, 1, 0], 1]]
+        pur_2 = (purity[key[key_in[1, 1, 0], 0]] + purity[key[key_in[0, 1, 0], 1]])/2
 
-    return zz, pur
+
+    return zz, (pur_1, pur_2)
 
 
 
