@@ -285,9 +285,13 @@ def forward_quant(C_in, L_in=np.asarray([None]), S=np.asarray([None]), C_v_in=np
             return (Ec, g_v)        
     
 
-def backward_quant_natural(Ec0, S, deltaEcMax, weightС, zeal=10, targetC=np.asarray(None)):
+def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=10, targetC=np.asarray(None), S=np.asarray([None])):
     # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
+    
+    if(S.any() == None):
+        S = np.diag(np.ones(Ec0.shape[0]))
+        
     size = Ec0.shape[0]
     indexSpace = []
     valueSpace = []
@@ -361,10 +365,13 @@ def backward_quant_natural(Ec0, S, deltaEcMax, weightС, zeal=10, targetC=np.asa
     return(finalAns, C)
 
 
-def forward_quant_opt(C0, S, deltaCMax, weightEc, zeal=10, targetEc=np.asarray(None)):
+def forward_quant_opt(C0, S, deltaCMax, weightEc, zeal=10, targetEc=np.asarray(None), S=np.asarray([None])):
     # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     
+    if(S.any() == None):
+        S = np.diag(np.ones(C0.shape[0]))
+        
     size = C0.shape[0]
     indexSpace = []
     valueSpace = []
