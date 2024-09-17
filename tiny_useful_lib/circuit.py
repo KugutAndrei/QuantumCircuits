@@ -77,6 +77,34 @@ def oscillator_Z(freq=None, C=None, Ec=None, El=None):
         
 # some staff to manage capacitance-energy matrixes
 
+
+# adds a table enumeration
+def print_table(M, integer=False):
+    
+    # allows to print a huge matrix
+    np.set_printoptions(linewidth=120)
+
+    A=M.shape[0] + 1
+    B=M.shape[1] + 1
+    
+    if(integer):
+        matrixForPrint = np.zeros((A, B), int)
+    else:
+        matrixForPrint = np.zeros((A, B), float)
+    
+    for i in range(A):
+        matrixForPrint[i, 0] = i - 1
+        
+    for i in range(B):
+        matrixForPrint[0, i] = i - 1
+        
+    matrixForPrint[0, 0] = 0
+        
+    matrixForPrint[1:(A+1), 1:(B+1)] = M[:, :]
+    
+    print(matrixForPrint)
+    
+    
 def ReverseQuantization(Elin, Ecin, S=np.asarray([None]), g_v_in=np.asarray([None])):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
     # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
