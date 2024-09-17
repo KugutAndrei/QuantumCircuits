@@ -387,7 +387,7 @@ def forward_quant_opt(C0, deltaCMax, weightEc, zeal=10, targetEc=np.asarray([Non
         for m in range(size):
             if(deltaCMax[n, m] != 0):
                 indexSpace.append([n, m])
-                bounds.append((-deltaCMax[n, m], +deltaCMax[n, m]))
+                bounds.append(-(min(C0[n, m], deltaCMax[n, m]), +deltaCMax[n, m]))
                 valueSpace.append(deltaCMax[n, m])
     
     dim = len(indexSpace)
