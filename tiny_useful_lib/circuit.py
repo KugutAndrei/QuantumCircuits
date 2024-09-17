@@ -105,16 +105,22 @@ def print_table(M, integer=False):
     print(matrixForPrint)
     
     
-def ReverseQuantization(Elin, Ecin, S=np.asarray([None]), g_v_in=np.asarray([None])):
+def backward_quant(Ec_in, El_in=np.asarray([None]), S=np.asarray([None]), g_v_in=np.asarray([None])):
     # El – строка длины n (кол-во степеней свободы) с индуктивными энергиями каждой подсистемы
     # Ec – матрица nxn с емкостными энергиями каждой подсистемы и связями между ними
     # S – матрица перехода от реальных потоков к модельным
     # g_c – вектор связей с антенками в GHz/V
-    
-    El = np.copy(Elin)
-    Ec = np.copy(Ecin)
+        
+    Ec = np.copy(Ec_in)
     n = Ec.shape[0]
     
+    if(El_in.any() == None):
+        flag_L = False
+        El = np.ones(n)
+    else: 
+        flag_L = True
+        El = np.copy(El_in)
+        
     flag = False
     
     if(S.any() == None):
@@ -184,29 +190,41 @@ def ReverseQuantization(Elin, Ecin, S=np.asarray([None]), g_v_in=np.asarray([Non
     
     # на выходе емкости в fF и индуктивности в nH
     
-    if(flag):
-        return(L, C, C_v)
+    if(flag_L):
+        if(flag):
+            return (L, C, C_v)
+        else:
+            return (L, C)
     else:
-        return(L, C)
+        if(flag):
+            return (C, C_v)
+        else:
+            return C
 
 
-def ForwardQuantization(Lin, Cin, S=np.asarray([None]), C_v_in=np.asarray([None])):
+def forward_quant(C_in, L_in=np.asarray([None]), S=np.asarray([None]), C_v_in=np.asarray([None])):
     # C – матрица nxn с емкостями
     # S – матрица перехода от реальных потоков к модельным
     # C_v – вектор разм. n из антенковых ёмкостей на iый узел (каждую отдельную антенку нужно считать независимо)
+        
+    C = np.copy(C_in)
+    n = C.shape[0]
     
-    L = np.copy(Lin)
-    C = np.copy(Cin)
-    
+    if(L_in.any() == None):
+        flag_L=False
+        L = np.ones(n)
+    else:
+        flag_L=True
+        L = np.copy(L_in)
+        
     if(C_v_in.any() == None):
-        C_v = np.zeros(L.shape[0])
+        C_v = np.zeros(n)
     else:
         C_v = np.copy(C_v_in)
         
     if(S.any() == None):
-        S = np.diag(np.ones(L.shape[0]))
+        S = np.diag(np.ones(n))
     
-    n = L.shape[0]
     InvL = np.zeros((n, n))
     # заполним нормльно матрицы
     for i in range(n):
@@ -250,15 +268,24 @@ def ForwardQuantization(Lin, Cin, S=np.asarray([None]), C_v_in=np.asarray([None]
             elif(j > i):
                 Ec[i, j] = Ec[j, i] = 2*e/Fq * CInv[i, j] * 10**6
                 Ec[j, i] = 0
-    if(C_v_in.any() == None):
-        return(El, Ec)
+                
+    if(flag_L):
+        if(C_v_in.any() == None):
+            return (El, Ec)
+        else:
+            # находим множители связи с антенкой g_v*V_in = g, g_v – GHz/V
+            g_v = S@CInv_or@C_v_in/Fq/1e9
+            return (El, Ec, g_v)
     else:
-        # находим множители связи с антенкой g_v*V_in = g, g_v – GHz/V
-        g_v = S@CInv_or@C_v_in/Fq/1e9
-        return(El, Ec, g_v)
+        if(C_v_in.any() == None):
+            return Ec
+        else:
+            # находим множители связи с антенкой g_v*V_in = g, g_v – GHz/V
+            g_v = S@CInv_or@C_v_in/Fq/1e9
+            return (Ec, g_v)        
     
 
-def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, targetC=np.asarray(None)):
+def backward_quant_natural(Ec0, S, deltaEcMax, weightС, zeal=10, targetC=np.asarray(None)):
     # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     size = Ec0.shape[0]
@@ -266,7 +293,6 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, target
     valueSpace = []
 
     Ec0*=1e3
-    El*=1e3
     deltaEcMax*=1e3
     
     if(targetC.any()==None):
@@ -295,7 +321,7 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, target
             
             Ec[n, m] += deltaEc[i]
             
-        _, C = tul.ReverseQuantization(El/1000, Ec/1000, S=S)
+        C = backward_quant(Ec/1000, S=S)
         
         answ = 0
         
@@ -330,12 +356,12 @@ def PhysOptReverseQuantization(El, Ec0, S, deltaEcMax, weightС, zeal=10, target
             
         finalAns[n, m] += ans[i]
         
-    _, C = tul.ReverseQuantization(El/1000, finalAns/1000, S=S)
+    C = forward_quant(El/1000, finalAns/1000, S=S)
     
     return(finalAns, C)
 
 
-def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, targetEc=np.asarray(None)):
+def forward_quant_opt(C0, S, deltaCMax, weightEc, zeal=10, targetEc=np.asarray(None)):
     # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     
@@ -370,7 +396,7 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, targetEc=
             
             C[n, m] += deltaC[i]
             
-        _, Ec = ForwardQuantization(L, C, S=S)
+        Ec = forward_quant(C, S=S)
         
         Ec = Ec*1000
         answ = 0
@@ -410,6 +436,6 @@ def PhysOptForwardQuantization(L, C0, S, deltaCMax, weightEc, zeal=10, targetEc=
             
         finalAns[n, m] += ans[i]
         
-    _, Ec = ForwardQuantization(L, finalAns, S=S)
+    Ec = forward_quant(finalAns, S=S)
     
     return(finalAns, Ec)
