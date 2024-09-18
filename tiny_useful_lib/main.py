@@ -397,11 +397,11 @@ def StatesRepr(state, bSize, size):
 
 def Oscillator(freq, Z=None, numOfLvls=20):
     # собственные значения энергии
-    eigEnergies = np.linspace(0, freq * (numOfLevels - 1), numOfLevels)
+    eigEnergies = np.linspace(0, freq * (numOfLvls - 1), numOfLvls)
 
     # оператор уничтожения
     a = np.zeros((numOfLvls, numOfLvls), dtype=complex)
-    for n in range(numOfLevels - 1):
+    for n in range(numOfLvls - 1):
         a[n, n + 1] = np.sqrt(n + 1)
 
     # оператор рождения
@@ -500,7 +500,7 @@ def Fluxonium(Ej, El, Ec, gridSize=None, numOfLvls=5, F=0, Q=0):
         gridSize = int(1.5*numOfLvls) + 20
 
     nu=2*np.sqrt(El*Ec)
-    _, at, a = Oscillator(nu, numOfLevels=gridSize)
+    _, at, a = Oscillator(nu, numOfLvls=gridSize)
     one = np.diag(np.ones(gridSize))
     phi = -1j*(Ec/4/El)**0.25*(at - a)
     q = (El/4/Ec)**0.25*(at + a)
