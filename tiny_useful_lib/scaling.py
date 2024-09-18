@@ -391,7 +391,7 @@ def g_qubits_test(qubit_1, qubit_2, coop, g_c1, g_c2, g_qq, regime=0):
                                                          q21=q_C, q23=q_C,
                                                          q32=q_Q2, q31=q_Q2,
                                                          opers2=np.asarray([phi_C, q_C]),
-                                                         g12=g_c, g23=g_c, g31=0,
+                                                         g12=g_c1, g23=g_c2, g31=g_qq,
                                                          numOfLvls=min(200,spect_Q1.shape[0]*spect_Q2.shape[0]*spect_C.shape[0]), 
                                                          project=True)
         
