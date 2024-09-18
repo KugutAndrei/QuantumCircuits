@@ -395,18 +395,18 @@ def StatesRepr(state, bSize, size):
     plt.show()
 
 
-def Oscillator(freq, Z=None, numOfLevels=20):
+def Oscillator(freq, Z=None, numOfLvls=20):
     # собственные значения энергии
     eigEnergies = np.linspace(0, freq * (numOfLevels - 1), numOfLevels)
 
     # оператор уничтожения
-    a = np.zeros((numOfLevels, numOfLevels), dtype=complex)
+    a = np.zeros((numOfLvls, numOfLvls), dtype=complex)
     for n in range(numOfLevels - 1):
         a[n, n + 1] = np.sqrt(n + 1)
 
     # оператор рождения
-    at = np.zeros((numOfLevels, numOfLevels), dtype=complex)
-    for n in range(numOfLevels - 1):
+    at = np.zeros((numOfLvls, numOfLvls), dtype=complex)
+    for n in range(numOfLvls - 1):
         at[n + 1, n] = np.sqrt(n + 1)
 
     if(Z==None):
