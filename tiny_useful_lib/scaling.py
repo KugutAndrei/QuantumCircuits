@@ -401,16 +401,16 @@ def g_qubits_test(qubit_1, qubit_2, coop, g_c1, g_c2, g_qq, regime=0):
     key, purity, stlist = tul.StatesPurity(mixStates, (spect_Q1.shape[0], spect_C.shape[0], spect_Q2.shape[0]), stList=True)
     zz = (mixEnrg[key[1, 0, 1]] - mixEnrg[key[0, 0, 1]] - mixEnrg[key[1, 0, 0]])*1e6
     
-        if(regime):
-            _, leakage_param, _ = tul.trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], 
-                                                      pert_oper=phi_C_mix,
-                                                      spectrum=mixEnrg, border=0.2, 
-                                                      other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=1)
-        else:
-            _, leakage_param, _ = tul.trans_isolation(init_st=0, 
-                                                      target_st=key[0, 1, 0], pert_oper=phi_C_mix,
-                                                      spectrum=mixEnrg, border=0.2, 
-                                                      other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=1)   
+    if(regime):
+        _, leakage_param, _ = tul.trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], 
+                                                  pert_oper=phi_C_mix,
+                                                  spectrum=mixEnrg, border=0.2, 
+                                                  other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=1)
+    else:
+        _, leakage_param, _ = tul.trans_isolation(init_st=0, 
+                                                  target_st=key[0, 1, 0], pert_oper=phi_C_mix,
+                                                  spectrum=mixEnrg, border=0.2, 
+                                                  other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=1)   
     
     gap = abs(leakage_param[0, 1])
         
