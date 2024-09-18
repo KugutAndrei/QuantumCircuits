@@ -395,7 +395,7 @@ def StatesRepr(state, bSize, size):
     plt.show()
 
 
-def Oscillator(freq, numOfLevels=100):
+def Oscillator(freq, Z=None, numOfLevels=20):
     # собственные значения энергии
     eigEnergies = np.linspace(0, freq * (numOfLevels - 1), numOfLevels)
 
@@ -409,7 +409,22 @@ def Oscillator(freq, numOfLevels=100):
     for n in range(numOfLevels - 1):
         at[n + 1, n] = np.sqrt(n + 1)
 
-    return (eigEnergies, at, a)
+    if(Z==None):
+        return (eigEnergies, at, a)
+    else:
+        phi = -1j*np.sqrt(2*np.pi*e*Z/Fq)*(at - a)
+        q = np.sqrt(Fq/(8*np.pi*e*Z))*(at + a)
+        return (eigEnergies, phi, q)
+
+
+def Oscillator_circuit(El, Ec, numOfLvls=20):
+    
+    (eigEnergies, at, a) = Oscillator(2*np.sqrt(Ec*El), numOfLvls=numOfLvls)
+    
+    phi = -1j*(Ec/4/El)**0.25*(at - a)
+    q = (El/4/Ec)**0.25*(at + a)
+    
+    return (eigEnergies, phi, q)
 
 
 def OperInEigStates(eigVectors, gridSize=0, h=0, leftBorder=0):
