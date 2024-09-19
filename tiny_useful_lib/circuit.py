@@ -375,7 +375,6 @@ def forward_quant_opt(C0, deltaCMax, weightEc, zeal=10, targetEc=np.asarray([Non
     valueSpace = []
     if(targetEc.any()==None):
         targetEc=np.zeros((size, size))
-    else:
     
     # оперделим область параметров с помощью deltaEc
     bounds = []
