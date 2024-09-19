@@ -296,8 +296,6 @@ def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=10, targetC=np.asarra
     indexSpace = []
     valueSpace = []
 
-    Ec0*=1e3
-    deltaEcMax*=1e3
     
     if(targetC.any()==None):
         targetC=np.zeros((size, size))
@@ -325,7 +323,7 @@ def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=10, targetC=np.asarra
             
             Ec[n, m] += deltaEc[i]
             
-        C = backward_quant(Ec/1000, S=S)
+        C = backward_quant(Ec, S=S)
         
         answ = 0
         
@@ -352,17 +350,17 @@ def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=10, targetC=np.asarra
             lossVal = sol.fun
             ans = sol.x
     
-    finalAns = np.copy(Ec0)
+    Ec_opt = np.copy(Ec0)
     
     for i in range(dim):
         n = indexSpace[i][0]
         m = indexSpace[i][1]
             
-        finalAns[n, m] += ans[i]
+        Ec_opt[n, m] += ans[i]
         
-    C = forward_quant(El/1000, finalAns/1000, S=S)
+    C_opt = forward_quant(Ec_opt, S=S)
     
-    return(finalAns, C)
+    return(Ec_opt, C_opt)
 
 
 def forward_quant_opt(C0, deltaCMax, weightEc, zeal=10, targetEc=np.asarray([None]), S=np.asarray([None])):
@@ -377,8 +375,7 @@ def forward_quant_opt(C0, deltaCMax, weightEc, zeal=10, targetEc=np.asarray([Non
     valueSpace = []
     if(targetEc.any()==None):
         targetEc=np.zeros((size, size))
-
-    targetEc *= 1e3
+    else:
     
     # оперделим область параметров с помощью deltaEc
     bounds = []
@@ -405,12 +402,11 @@ def forward_quant_opt(C0, deltaCMax, weightEc, zeal=10, targetEc=np.asarray([Non
             
         Ec = forward_quant(C, S=S)
         
-        Ec = Ec*1000
         answ = 0
         
         for n in range(size):
             for m in range(size - n):
-                answ += weightEc[n, n + m] * (Ec[n, n + m] - targetEc[n, n + m])**2
+                answ += 1e5*weightEc[n, n + m] * (Ec[n, n + m] - targetEc[n, n + m])**2
         
         return answ
         
