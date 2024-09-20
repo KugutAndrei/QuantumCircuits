@@ -462,6 +462,6 @@ def forward_quant_opt(C0, deltaCMax, weightEc, zeal=50, targetEc=np.asarray([Non
             
         C_opt[n, m] += ans[i]
         
-    Ec = forward_quant(finalAns, S=S)
+    Ec = forward_quant(C_opt, S=S)
     
     return(C_opt, Ec)
