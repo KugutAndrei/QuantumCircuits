@@ -285,7 +285,7 @@ def forward_quant(C_in, L_in=np.asarray([None]), S=np.asarray([None]), C_v_in=np
             return (Ec, g_v)        
     
 
-def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=10, targetC=np.asarray([None]), S=np.asarray([None])):
+def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=50, targetC=np.asarray([None]), S=np.asarray([None]), optimizer='grad'):
     # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     
@@ -336,19 +336,33 @@ def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=10, targetC=np.asarra
     ans = np.zeros(dim)
     lossVal = loss(ans)
     
-    for sample in range(zeal):
+    
+    if(optimizer=='grad'):
         
-        # генерируем x0
-        x0 = np.random.rand(dim) * 2*np.asarray(valueSpace) - np.asarray(valueSpace)
-        # оптимизируем
-        sol = minimize(loss, x0=x0, bounds=bounds)
-        
-        if(sol.success != True):
-            continue
-        
-        if(sol.fun < lossVal):
-            lossVal = sol.fun
-            ans = sol.x
+        for sample in range(zeal):
+
+            # генерируем x0
+            x0 = np.random.rand(dim) * 2*np.asarray(valueSpace) - np.asarray(valueSpace)
+            # оптимизируем
+            sol = minimize(loss, x0=x0, bounds=bounds)
+
+            if(sol.success != True):
+                continue
+
+            if(sol.fun < lossVal):
+                print('loss:', lossVal, '\n')
+                lossVal = sol.fun
+                ans = sol.x
+    
+    elif(optimizer=='annealing'):
+        sol = dual_annealing(loss, bounds=bounds, maxiter=zeal)
+        lossVal = sol.fun
+        print('loss:', lossVal, '\n')
+        ans = sol.x
+    else:
+        print('choose an apropriate optimizer: grad or annealing!')
+        return 0
+    
     
     Ec_opt = np.copy(Ec0)
     
@@ -363,7 +377,7 @@ def backward_quant_natural(Ec0, deltaEcMax, weightС, zeal=10, targetC=np.asarra
     return(Ec_opt, C_opt)
 
 
-def forward_quant_opt(C0, deltaCMax, weightEc, zeal=10, targetEc=np.asarray([None]), S=np.asarray([None])):
+def forward_quant_opt(C0, deltaCMax, weightEc, zeal=50, targetEc=np.asarray([None]), S=np.asarray([None]), optimizer='grad'):
     # энергии в ГГц!!!, a С в фФ
     # weightС - матрица с весами зануления емкостей
     
@@ -414,30 +428,40 @@ def forward_quant_opt(C0, deltaCMax, weightEc, zeal=10, targetEc=np.asarray([Non
     lossVal = loss(ans)
     print(lossVal, '\n')
     
-    for sample in range(zeal):
+    if(optimizer=='grad'):
+        
+        for sample in range(zeal):
 
-        # генерируем x0
-        x0 = np.random.rand(dim) * 2*np.asarray(valueSpace) - np.asarray(valueSpace)
-        # оптимизируем
-        sol = minimize(loss, x0=x0, bounds=bounds)
-        
-        
-        if(sol.success != True):
-            continue
-        
-        if(sol.fun < lossVal):
-            print(lossVal, '\n')
-            lossVal = sol.fun
-            ans = sol.x
+            # генерируем x0
+            x0 = np.random.rand(dim) * 2*np.asarray(valueSpace) - np.asarray(valueSpace)
+            # оптимизируем
+            sol = minimize(loss, x0=x0, bounds=bounds)
+
+            if(sol.success != True):
+                continue
+
+            if(sol.fun < lossVal):
+                print('loss:', lossVal, '\n')
+                lossVal = sol.fun
+                ans = sol.x
     
-    finalAns = np.copy(C0)
+    elif(optimizer=='annealing'):
+        sol = dual_annealing(loss, bounds=bounds, maxiter=zeal)
+        lossVal = sol.fun
+        print('loss:', lossVal, '\n')
+        ans = sol.x
+    else:
+        print('choose an apropriate optimizer: grad or annealing!')
+        return 0
+    
+    C_opt = np.copy(C0)
     
     for i in range(dim):
         n = indexSpace[i][0]
         m = indexSpace[i][1]
             
-        finalAns[n, m] += ans[i]
+        C_opt[n, m] += ans[i]
         
     Ec = forward_quant(finalAns, S=S)
     
-    return(finalAns, Ec)
+    return(C_opt, Ec)
