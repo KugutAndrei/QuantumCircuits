@@ -217,7 +217,7 @@ def zz_far_QC(coop_1, qubit_1, coop_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_
 # fun for qubits zz and gap optimization
 
 def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=0, regular=0.01, 
-                       bounds=([0, 0.8], [0, 0.8]), mod='k^2/d^2',maxiter=200):
+                       bounds=([0, 0.8], [0, 0.8]), border=0.2, mod='k^2/d^2',maxiter=200):
 
     (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
@@ -246,11 +246,11 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=0, regular=0.0
 
         if(regime):
             _, leakage_param, _ = trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], pert_oper=phi_C_mix,
-                                                  spectrum=mixEnrg, border=0.2, 
+                                                  spectrum=mixEnrg, border=border, 
                                                   other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=mod)
         else:
             _, leakage_param, _ = trans_isolation(init_st=0, target_st=key[0, 1, 0], pert_oper=phi_C_mix,
-                                                  spectrum=mixEnrg, border=0.2, 
+                                                  spectrum=mixEnrg, border=border, 
                                                   other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=mod)            
 
         return (abs(leakage_param[0, 1]) - gap_target)**2 + (regular*g_c_1 + regular*g_c_2)**2
@@ -294,11 +294,11 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=0, regular=0.0
 
     if(regime):
         _, leakage_param, _ = trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], pert_oper=phi_C_mix,
-                                              spectrum=mixEnrg, border=0.2, 
+                                              spectrum=mixEnrg, border=border, 
                                               other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=mod)
     else:
         _, leakage_param, _ = trans_isolation(init_st=0, target_st=key[0, 1, 0], pert_oper=phi_C_mix,
-                                              spectrum=mixEnrg, border=0.2, 
+                                              spectrum=mixEnrg, border=border, 
                                               other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=mod)            
 
     print('gap:', abs(leakage_param[0, 1]))
@@ -307,7 +307,7 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=0, regular=0.0
     
 
 
-def g_qubits_opt_sim(qubit_1, qubit_2, coop, gap_target, regime=0, mod='k^2/d^2'):
+def g_qubits_opt_sim(qubit_1, qubit_2, coop, gap_target, regime=0, border=0.2, mod='k^2/d^2'):
 
     (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
@@ -332,11 +332,11 @@ def g_qubits_opt_sim(qubit_1, qubit_2, coop, gap_target, regime=0, mod='k^2/d^2'
 
         if(regime):
             _, leakage_param, _ = trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], pert_oper=phi_C_mix,
-                                                      spectrum=mixEnrg, border=0.2, 
+                                                      spectrum=mixEnrg, border=border, 
                                                       other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=mod)
         else:
             _, leakage_param, _ = trans_isolation(init_st=0, target_st=key[0, 1, 0], pert_oper=phi_C_mix,
-                                                      spectrum=mixEnrg, border=0.2, 
+                                                      spectrum=mixEnrg, border=border, 
                                                       other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=mod)            
 
         return (abs(leakage_param[0, 1]) - gap_target)**2
@@ -379,7 +379,7 @@ def g_qubits_opt_sim(qubit_1, qubit_2, coop, gap_target, regime=0, mod='k^2/d^2'
     return g_c, g_qq, zz
     
     
-def g_qubits_test(qubit_1, qubit_2, coop, g_c1, g_c2, g_qq, regime=0, mod='k^2/d^2'):
+def g_qubits_test(qubit_1, qubit_2, coop, g_c1, g_c2, g_qq, regime=0, border=0.2, mod='k^2/d^2'):
 
     (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
@@ -405,12 +405,12 @@ def g_qubits_test(qubit_1, qubit_2, coop, g_c1, g_c2, g_qq, regime=0, mod='k^2/d
     if(regime):
         _, leakage_param, _ = trans_isolation(init_st=key[1, 0, 1], target_st=key[1, 1, 1], 
                                               pert_oper=phi_C_mix,
-                                              spectrum=mixEnrg, border=0.2, 
+                                              spectrum=mixEnrg, border=border, 
                                               other_st_list=[key[1, 0, 0], key[0, 0, 1], key[0, 0, 0]], mod=mod)
     else:
         _, leakage_param, _ = trans_isolation(init_st=0, 
                                               target_st=key[0, 1, 0], pert_oper=phi_C_mix,
-                                              spectrum=mixEnrg, border=0.2, 
+                                              spectrum=mixEnrg, border=border, 
                                               other_st_list=[key[1, 0, 0], key[0, 0, 1], key[1, 0, 1]], mod=mod)   
     
     gap = abs(leakage_param[0, 1])
