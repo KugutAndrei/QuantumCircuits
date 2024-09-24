@@ -45,13 +45,19 @@ def kron(*opers):
     
 
 
-def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod=0):
+def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d'):
 
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
     # mod 1: search based on k**2/delta**2, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta**2)_min
     # mod 2: search with border[0] – minimal value of k and border[1] – maximum transition's frequencies delta
     
-
+    if(mod=='k^2/d' or mod==0):
+        mod = 0
+    elif(mod=='k^2/d^2' or mod==1):
+        mod = 1
+    elif(mod=='k_min, d_max' or mod==2):
+        mod = 2
+        
     # output: leakage_st[0] – init leakage states, leakage_st[1] – target leakage states; leakage_param[0] – k, leakage_param[1] – delta
     
     other_st_list = np.asarray(other_st_list)
