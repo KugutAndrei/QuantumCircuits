@@ -21,7 +21,7 @@ from QuantumCircuits.tiny_useful_lib.main import *
 
 # fun for searching of proper fluxonium 
 
-def fluxonium_coop(f01, alpha, bounds=[(2, 100), (0.4, 1.5), (0.2, 6)]):
+def fluxonium_coup(f01, alpha, bounds=[(2, 100), (0.4, 1.5), (0.2, 6)]):
 
     def fun(x):
         eigval, _, q = Fluxonium(x[0], x[1], x[2], gridSize=60, numOfLvls=3, F=0)
@@ -53,7 +53,7 @@ def fluxonium_search(f01, f12, f03, bounds=[(2, 100), (0.5, 1.5), (0.2, 6)]):
 
 # fun for searching of proper transmon
 
-def transmon_coop(f01, alpha, bounds=[(2, 100), (0.01, 3)]):
+def transmon_coup(f01, alpha, bounds=[(2, 100), (0.01, 3)]):
 
     def fun(x):
         eigval, _, q = Transmon(x[0], 0, x[1], numOfLvls=5)
@@ -66,15 +66,15 @@ def transmon_coop(f01, alpha, bounds=[(2, 100), (0.01, 3)]):
     return x[np.argmin(loss)]
 
 
-# fun for cooplers zz optimization
+# fun for couplers zz optimization
 
-def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=0):
+def g_coups_opt(coup_1, coup_2, qubit, g1, g2, regime=0):
 
     def loss(g):
 
         (spect_F, phi_F, q_F) = map(np.copy, qubit)
-        (spect_C1, phi_C1, q_C1) = map(np.copy, coop_1)
-        (spect_C2, phi_C2, q_C2) = map(np.copy, coop_2)
+        (spect_C1, phi_C1, q_C1) = map(np.copy, coup_1)
+        (spect_C2, phi_C2, q_C2) = map(np.copy, coup_2)
         
         # емкостно смешиваем 3 подсистемы системы
         (mixEnrg, mixStates, mixH) = MixOfThreeSys(spect_C1, spect_F, spect_C2,
@@ -116,8 +116,8 @@ def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=0):
     g_r = opt_r.x[0]
 
     (spect_F, phi_F, q_F) = qubit
-    (spect_C1, phi_C1, q_C1) = coop_1
-    (spect_C2, phi_C2, q_C2) = coop_2
+    (spect_C1, phi_C1, q_C1) = coup_1
+    (spect_C2, phi_C2, q_C2) = coup_2
     
     # емкостно смешиваем 3 подсистемы системы
     (mixEnrg_l, mixStates, mixH) = MixOfThreeSys(spect_C1, spect_F, spect_C2,
@@ -159,10 +159,10 @@ def g_coops_opt(coop_1, coop_2, qubit, g1, g2, regime=0):
 
 
 
-def zz_far_QC(coop_1, qubit_1, coop_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_q2, g_c1_c2, regime=0):
+def zz_far_QC(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_q2, g_c1_c2, regime=0):
 
-    (spect_C1, phi_C1, q_C1) = map(np.copy, coop_1)
-    (spect_C2, phi_C2, q_C2) = map(np.copy, coop_2)
+    (spect_C1, phi_C1, q_C1) = map(np.copy, coup_1)
+    (spect_C2, phi_C2, q_C2) = map(np.copy, coup_2)
        
     (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
@@ -216,13 +216,13 @@ def zz_far_QC(coop_1, qubit_1, coop_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_
 
 # fun for qubits zz and gap optimization
 
-def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=0, regular=0.01, 
+def g_qubits_opt_assim(qubit_1, qubit_2, coup, gap_target, regime=0, regular=0.01, 
                        bounds=([0, 0.8], [0, 0.8]), border=0.2, mod='k^2/d^2',maxiter=200):
 
     (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
     
-    (spect_C, phi_C, q_C) = map(np.copy, coop)
+    (spect_C, phi_C, q_C) = map(np.copy, coup)
 
     def gap_loss(x):
 
@@ -307,12 +307,12 @@ def g_qubits_opt_assim(qubit_1, qubit_2, coop, gap_target, regime=0, regular=0.0
     
 
 
-def g_qubits_opt_sim(qubit_1, qubit_2, coop, gap_target, regime=0, border=0.2, mod='k^2/d^2'):
+def g_qubits_opt_sim(qubit_1, qubit_2, coup, gap_target, regime=0, border=0.2, mod='k^2/d^2'):
 
     (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
     
-    (spect_C, phi_C, q_C) = map(np.copy, coop)
+    (spect_C, phi_C, q_C) = map(np.copy, coup)
 
     def gap_loss(g_c):
         # емкостно смешиваем 3 подсистемы системы
@@ -379,12 +379,12 @@ def g_qubits_opt_sim(qubit_1, qubit_2, coop, gap_target, regime=0, border=0.2, m
     return g_c, g_qq, zz
     
     
-def g_qubits_test(qubit_1, qubit_2, coop, g_c1, g_c2, g_qq, regime=0, border=0.2, mod='k^2/d^2'):
+def g_qubits_test(qubit_1, qubit_2, coup, g_c1, g_c2, g_qq, regime=0, border=0.2, mod='k^2/d^2'):
 
     (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
     (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
     
-    (spect_C, phi_C, q_C) = map(np.copy, coop)
+    (spect_C, phi_C, q_C) = map(np.copy, coup)
 
 
     (mixEnrg, mixStates, mixH, opersT)=MixOfThreeSys(spect_Q1, spect_C, spect_Q2,
