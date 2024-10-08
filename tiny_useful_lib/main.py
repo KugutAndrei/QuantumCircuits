@@ -569,7 +569,7 @@ def Transmon(Ej1, Ej2, Ec, gridSize=None, numOfLvls=100, F=0, Q=0):
 
 
 def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray([]), 
-                g=0, numOfLvls=5, project=False):
+                g=0, numOfLvls=5, project=True):
     # связываем две системы через операторы q1 и q2, попутно расширяя их операторы на общее пространство
     # opers – список из матриц операторов соотв. системы
     
@@ -782,7 +782,7 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
                   g12=None, 
                   g23=None,
                   g31=None,
-                  numOfLvls=10, project=False):
+                  numOfLvls=10, project=True):
 
     
     size1 = spect1.size
