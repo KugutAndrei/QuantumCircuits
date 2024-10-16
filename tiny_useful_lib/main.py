@@ -31,6 +31,35 @@ j=0.5*10**6
 S=(1000*500)*10**(-18)
 
 
+def subspace(M, indices):
+    
+    tmp = []
+    tmp.append(indices)
+    tmp = np.asarray(tmp, dtype=int)
+
+    y = np.ones((tmp.shape[0], 1), dtype=int)@tmp
+    x = y.transpose()
+    
+    return M[x, y]
+
+
+def sym_to_triangle(M_in):
+
+    M = np.copy(M_in)
+
+    # symmetrisation
+    for n in range(M.shape[0]):
+        for m in range(M.shape[1]):
+            
+            if(M[n, m] != 0): M[m, n] = M[n, m]
+
+    # to triangle
+    for n in range(M.shape[0]):
+        for m in range(n):
+            M[n, m] = 0
+
+    return M
+    
 
 
 def kron(*opers):

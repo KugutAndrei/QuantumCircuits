@@ -19,6 +19,7 @@ from scipy.optimize import dual_annealing
 from scipy.linalg import cosm, expm, sqrtm, det
 from QuantumCircuits.tiny_useful_lib.main import *
 
+
 # fun for searching of proper fluxonium 
 
 def fluxonium_coup(f01, alpha, bounds=[(2, 100), (0.4, 1.5), (0.2, 6)]):
@@ -163,7 +164,7 @@ def g_coups_opt(coup_1, coup_2, qubit, g1, g2, regime=0):
 
 
 
-def zz_far_QC(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_q2, g_c1_c2, regime=0):
+def zz_far_QC(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_q2, g_c1_c2, g_long=0, regime=0):
 
     (spect_C1, phi_C1, q_C1) = map(np.copy, coup_1)
     (spect_C2, phi_C2, q_C2) = map(np.copy, coup_2)
@@ -189,12 +190,13 @@ def zz_far_QC(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_
                                                 (spect_C1.shape[0], spect_Q1.shape[0], spect_C2.shape[0]), 
                                                 stList=True, dirtyBorder=0.0001)
     
+    q_C1_new = opersC1[1]
     q_C2_new = opersC2[1]
     q_Q1_new = opersQ1[1]
     
     # mix of CQC and Q
     (mixEnrg, mixStates, mixH) = MixOfTwoSys(mixEnrg_in, spect_Q2, 
-                                             g_q1_q2*q_Q1_new + g_q2_c2*q_C2_new, 
+                                             g_q1_q2*q_Q1_new + g_q2_c2*q_C2_new + g_long*q_C1_new, 
                                              q_Q2, g=1, numOfLvls=mixEnrg_in.shape[0]*spect_Q2.shape[0], project=True)
     
     key, purity, stlist = StatesPurity(mixStates, (mixEnrg_in.shape[0], spect_Q2.shape[0]), stList=True, dirtyBorder=0.0001)
@@ -219,6 +221,33 @@ def zz_far_QC(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_
 
 
 # fun for qubits zz and gap optimization
+
+def gap_one_side(Q, coup, g):
+
+    (spect_Q, phi_Q, q_Q) = map(np.copy, Q)
+    (spect_C, phi_C, q_C) = map(np.copy, coup)
+
+    # mix of Q – C
+    (spect, mixStates, _) = tul.MixOfTwoSys(spect_Q, spect_C, 
+                                                               q_Q, q_C, g=g, 
+                                                               numOfLvls=spect_Q.shape[0]*spect_C.shape[0], 
+                                                               project=True)
+
+    key, _ = tul.StatesPurity(mixStates, (spect_Q.shape[0], spect_C.shape[0]), dirtyBorder=0.0001)
+        
+    return abs(spect[key[1, 1]] - spect[key[1, 0]] - spect[key[0, 1]])
+
+
+def light_gap_opt(Q, C, gap_t):
+
+    def loss(g):
+        gap = gap_one_side(Q, C, g)
+        return 1e8*(gap - gap_t)**2
+
+    opt = scp.optimize.dual_annealing(loss, bounds=[(0.1, 0.3)], maxiter=40)
+    
+    return opt.x[0]
+
 
 def g_qubits_opt_assim(qubit_1, qubit_2, coup, gap_target, regime=0, regular=0.01, 
                        bounds=([0, 0.8], [0, 0.8]), border=0.2, mod='k^2/d^2',maxiter=200):
@@ -421,3 +450,102 @@ def g_qubits_test(qubit_1, qubit_2, coup, g_c1, g_c2, g_qq, regime=0, border=0.2
         
     return gap, zz
     
+    
+# fun for couplers connection optimization
+
+def zz_far_QC_optimize(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_q2, g_q2_q3, regime=0, optimizer='grad'):
+
+    def loss(x):
+
+        zz_1, _ = tul.zz_far_QC(C1, Q2, C2, Q3, 
+                                g_q1_c1=g_q2_c1, 
+                                g_q1_c2=g_q2_c2, 
+                                g_q2_c2=g_q3_c2,
+                                g_q1_q2=g_q2_q3,
+                                g_c1_c2=x, 
+                                regime=regime)
+
+        zz_2, _ = tul.zz_far_QC(C2, Q2, C1, Q1, 
+                                g_q1_c1=g_q2_c2, 
+                                g_q1_c2=g_q2_c1, 
+                                g_q2_c2=g_q1_c1,
+                                g_q1_q2=g_q1_q2,
+                                g_c1_c2=x,
+                                regime=regime)
+
+        if(optimizer == 'grad'):
+            return (abs(zz_1) + abs(zz_2))**2 * 1e12
+        elif(optimizer == 'root'):
+            return (abs(zz_1) - abs(zz_2)) * 1e5
+
+    
+    if(optimizer == 'grad'):
+
+        if(regime):
+            opt = scp.optimize.minimize(loss, x0=[0], bounds=[(-0.2, 0)])
+            g = opt.x[0]
+        else:
+            opt = scp.optimize.minimize(loss, x0=[0], bounds=[(0, 0.2)])
+            g = opt.x[0]
+            
+    elif(optimizer == 'root'):
+        
+        if(regime):
+            opt = scp.optimize.root(loss, x0=-0.01)
+            g = opt.x[0]
+        else:
+            opt = scp.optimize.root(loss, x0=0.01)
+            g = opt.x[0]
+        
+
+    zz_1, pur_1 = tul.zz_far_QC(C1, Q2, C2, Q3, 
+                                g_q1_c1=g_q2_c1, 
+                                g_q1_c2=g_q2_c2, 
+                                g_q2_c2=g_q3_c2,
+                                g_q1_q2=g_q2_q3,
+                                g_c1_c2=g, 
+                                regime=regime)
+
+    if(pur_1[0] < 0.993):
+        print('ALARM, purity problem with 1!')
+    
+    zz_2, pur_2 = tul.zz_far_QC(C2, Q2, C1, Q1, 
+                                g_q1_c1=g_q2_c2, 
+                                g_q1_c2=g_q2_c1, 
+                                g_q2_c2=g_q1_c1,
+                                g_q1_q2=g_q1_q2,
+                                g_c1_c2=g,
+                                regime=regime)
+    if(pur_2[0] < 0.993):
+        print('ALARM, purity problem with 1!')
+    
+    return g, (zz_1, zz_2, pur_1, pur_2)
+
+
+def zz_far_QC_test(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_q2, g_q2_q3, g, g_long=0, regime=0):
+
+
+
+    zz_1, pur_1 = tul.zz_far_QC(C1, Q2, C2, Q3, 
+                                g_q1_c1=g_q2_c1, 
+                                g_q1_c2=g_q2_c2, 
+                                g_q2_c2=g_q3_c2,
+                                g_q1_q2=g_q2_q3,
+                                g_c1_c2=g,g_long, 
+                                regime=regime)
+
+    if(pur_1[0] < 0.993):
+        print('ALARM, purity problem with 1!')
+            
+    zz_2, pur_2 = tul.zz_far_QC(C2, Q2, C1, Q1, 
+                                g_q1_c1=g_q2_c2, 
+                                g_q1_c2=g_q2_c1, 
+                                g_q2_c2=g_q1_c1,
+                                g_q1_q2=g_q1_q2,
+                                g_c1_c2=g,g_long,
+                                regime=regime)
+
+    if(pur_2[0] < 0.993):
+        print('ALARM, purity problem with 1!')
+            
+    return g, (zz_1, zz_2, pur_1, pur_2)
