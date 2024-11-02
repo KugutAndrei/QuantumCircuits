@@ -532,7 +532,7 @@ def zz_far_QC_test(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_
                                 g_q2_c2=g_q3_c2,
                                 g_q1_q2=g_q2_q3,
                                 g_c1_c2=g,g_long, 
-                                regime=regime)
+                                regime)
 
     if(pur_1[0] < 0.993):
         print('ALARM, purity problem with 1!')
@@ -543,7 +543,7 @@ def zz_far_QC_test(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_
                                 g_q2_c2=g_q1_c1,
                                 g_q1_q2=g_q1_q2,
                                 g_c1_c2=g,g_long,
-                                regime=regime)
+                                regime)
 
     if(pur_2[0] < 0.993):
         print('ALARM, purity problem with 1!')
