@@ -228,12 +228,12 @@ def gap_one_side(Q, coup, g):
     (spect_C, phi_C, q_C) = map(np.copy, coup)
 
     # mix of Q – C
-    (spect, mixStates, _) = tul.MixOfTwoSys(spect_Q, spect_C, 
+    (spect, mixStates, _) = MixOfTwoSys(spect_Q, spect_C, 
                                                                q_Q, q_C, g=g, 
                                                                numOfLvls=spect_Q.shape[0]*spect_C.shape[0], 
                                                                project=True)
 
-    key, _ = tul.StatesPurity(mixStates, (spect_Q.shape[0], spect_C.shape[0]), dirtyBorder=0.0001)
+    key, _ = StatesPurity(mixStates, (spect_Q.shape[0], spect_C.shape[0]), dirtyBorder=0.0001)
         
     return abs(spect[key[1, 1]] - spect[key[1, 0]] - spect[key[0, 1]])
 
@@ -457,7 +457,7 @@ def zz_far_QC_optimize(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g
 
     def loss(x):
 
-        zz_1, _ = tul.zz_far_QC(C1, Q2, C2, Q3, 
+        zz_1, _ = zz_far_QC(C1, Q2, C2, Q3, 
                                 g_q1_c1=g_q2_c1, 
                                 g_q1_c2=g_q2_c2, 
                                 g_q2_c2=g_q3_c2,
@@ -465,7 +465,7 @@ def zz_far_QC_optimize(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g
                                 g_c1_c2=x, 
                                 regime=regime)
 
-        zz_2, _ = tul.zz_far_QC(C2, Q2, C1, Q1, 
+        zz_2, _ = zz_far_QC(C2, Q2, C1, Q1, 
                                 g_q1_c1=g_q2_c2, 
                                 g_q1_c2=g_q2_c1, 
                                 g_q2_c2=g_q1_c1,
@@ -498,7 +498,7 @@ def zz_far_QC_optimize(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g
             g = opt.x[0]
         
 
-    zz_1, pur_1 = tul.zz_far_QC(C1, Q2, C2, Q3, 
+    zz_1, pur_1 = zz_far_QC(C1, Q2, C2, Q3, 
                                 g_q1_c1=g_q2_c1, 
                                 g_q1_c2=g_q2_c2, 
                                 g_q2_c2=g_q3_c2,
@@ -509,7 +509,7 @@ def zz_far_QC_optimize(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g
     if(pur_1[0] < 0.993):
         print('ALARM, purity problem with 1!')
     
-    zz_2, pur_2 = tul.zz_far_QC(C2, Q2, C1, Q1, 
+    zz_2, pur_2 = zz_far_QC(C2, Q2, C1, Q1, 
                                 g_q1_c1=g_q2_c2, 
                                 g_q1_c2=g_q2_c1, 
                                 g_q2_c2=g_q1_c1,
@@ -526,7 +526,7 @@ def zz_far_QC_test(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_
 
 
 
-    zz_1, pur_1 = tul.zz_far_QC(C1, Q2, C2, Q3, 
+    zz_1, pur_1 = zz_far_QC(C1, Q2, C2, Q3, 
                                 g_q1_c1=g_q2_c1, 
                                 g_q1_c2=g_q2_c2, 
                                 g_q2_c2=g_q3_c2,
@@ -537,7 +537,7 @@ def zz_far_QC_test(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_
     if(pur_1[0] < 0.993):
         print('ALARM, purity problem with 1!')
             
-    zz_2, pur_2 = tul.zz_far_QC(C2, Q2, C1, Q1, 
+    zz_2, pur_2 = zz_far_QC(C2, Q2, C1, Q1, 
                                 g_q1_c1=g_q2_c2, 
                                 g_q1_c2=g_q2_c1, 
                                 g_q2_c2=g_q1_c1,
@@ -549,3 +549,109 @@ def zz_far_QC_test(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_
         print('ALARM, purity problem with 1!')
             
     return g, (zz_1, zz_2, pur_1, pur_2)
+
+
+def zz_far_QC_osc(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_q2, g_c1_c2, 
+                      g_long=0, gO_long=0, gO_Q=0,  El=0.5, Ec=4, g_o=0):
+
+    # fun for zz calculation of 0-type cooplers with connection via an oscillator
+    # system: C-Q-O-C
+    
+    (spect_C1, phi_C1, q_C1) = map(np.copy, coup_1)
+    (spect_C2, phi_C2, q_C2) = map(np.copy, coup_2)
+    
+    (spect_Q1, phi_Q1, q_Q1) = map(np.copy, qubit_1)
+    (spect_Q2, phi_Q2, q_Q2) = map(np.copy, qubit_2)
+
+    # creation of binding oscillator
+    (spect_O, phi_O, q_O) = Oscillator_circuit(El=El, Ec=Ec, numOfLvls=3)
+
+    # mix of Q and extra O
+    (mixEnrg, mixStates, _, opersQ1, opersO) = MixOfTwoSys(spect_Q1, spect_O,
+                                                                            q1=q_Q1, q2=q_O,
+                                                                            opers1=np.asarray([phi_Q1, q_Q1]),
+                                                                            opers2=np.asarray([phi_O, q_O]),
+                                                                            g=gO_Q,
+                                                                            numOfLvls=14)
+
+    phi_Q1 = opersQ1[0]
+    q_Q1 = opersQ1[1]
+
+    phi_O = opersO[0]
+    q_O = opersO[1]
+
+
+    key_F, purity_F, stlist_F = StatesPurity(mixStates, 
+                                                 (spect_Q1.shape[0], spect_O.shape[0]),
+                                                 stList=True, dirtyBorder=0.0001)
+
+    
+    (mixEnrg_in, mixStates, mixH,
+     opersC1, opersQ1, opersC2) = MixOfThreeSys(spect_C1, mixEnrg, spect_C2,
+                                                    q12=q_C1, q13=q_C1,
+                                                    q21=g_q1_c1*q_Q1 + g_o*q_O,
+                                                    q23=-g_q1_c2*q_Q1 - g_o*q_O,
+                                                    q32=q_C2, q31=q_C2,
+                                                    opers1=np.asarray([phi_C1, q_C1]),
+                                                    opers2=np.asarray([phi_Q1, q_Q1, q_O]),
+                                                    opers3=np.asarray([phi_C2, q_C2]),
+                                                    g12=1, g23=1, g31=g_c1_c2,
+                                                    numOfLvls=spect_C1.shape[0]*mixEnrg.shape[0]*spect_C2.shape[0]-5)
+
+
+    key_in, purity_in, stlist_in = StatesPurity(mixStates, 
+                                                    (spect_C1.shape[0], mixEnrg.shape[0], spect_C2.shape[0]), 
+                                                    stList=True, dirtyBorder=0.0001)    
+    q_C1_new = opersC1[1]
+    q_C2_new = opersC2[1]
+    q_Q1_new = opersQ1[1]    
+    q_O_new = opersQ1[2]   
+    # mix of CQC and Q
+    (mixEnrg, mixStates, mixH) = MixOfTwoSys(mixEnrg_in, spect_Q2, 
+                                                 g_long*q_C1_new + g_q1_q2*q_Q1_new + g_q2_c2*q_C2_new + gO_long*q_O_new, 
+                                                 q_Q2, g=1, numOfLvls=38)
+        
+    key, purity, stlist = StatesPurity(mixStates, (mixEnrg_in.shape[0], spect_Q2.shape[0]), stList=True, dirtyBorder=0.0001)
+
+        
+    zz = (mixEnrg[key[key_in[1, 0, 0], 1]] - mixEnrg[key[key_in[0, 0, 0], 1]] - mixEnrg[key[key_in[1, 0, 0], 0]])
+    pur_1001 = purity[key[key_in[1, 0, 0], 1]]*purity_in[key_in[1, 0, 0]]*purity_F[0]
+    pur_1000 = purity[key[key_in[1, 0, 0], 0]]*purity_in[key_in[1, 0, 0]]*purity_F[0]
+    pur_0001 = purity[key[key_in[0, 0, 0], 1]]*purity_in[key_in[0, 0, 0]]*purity_F[0]
+    pur_0100 = purity[key[key_in[0, 1, 0], 0]]*purity_in[key_in[0, 1, 0]]*purity_F[1]
+
+    return zz, (pur_1001, pur_1000, pur_0001, pur_0100)
+
+
+# fun for light gap adjustment
+
+def gap_one_side(Q, coup, g):
+
+    # calculation of zz between qubit and coopler = gap
+    
+    (spect_Q, phi_Q, q_Q) = map(np.copy, Q)
+    (spect_C, phi_C, q_C) = map(np.copy, coup)
+
+    # mix of Q – C
+    (spect, mixStates, _) = MixOfTwoSys(spect_Q, spect_C, 
+                                                               q_Q, q_C, g=g, 
+                                                               numOfLvls=spect_Q.shape[0]*spect_C.shape[0], 
+                                                               project=True)
+
+    key, _ = StatesPurity(mixStates, (spect_Q.shape[0], spect_C.shape[0]), dirtyBorder=0.0001)
+        
+    return abs(spect[key[1, 1]] - spect[key[1, 0]] - spect[key[0, 1]])
+
+
+def light_gap_opt(Q, C, gap_t):
+
+    # calculation of optimal g for target gap
+    
+    def loss(g):
+        gap = gap_one_side(Q, C, g)
+        return 1e8*(gap - gap_t)**2
+    
+    opt = scp.optimize.dual_annealing(loss, bounds=[(0.1, 0.3)], maxiter=40)
+    
+    return opt.x[0]
+

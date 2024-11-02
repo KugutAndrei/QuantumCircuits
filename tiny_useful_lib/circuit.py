@@ -77,6 +77,47 @@ def oscillator_Z(freq=None, C=None, Ec=None, El=None):
         
 # some staff to manage capacitance-energy matrixes
 
+# sum non-diognal elements and return 1D array of full elements capacitances
+def sum_to_diag(M):
+
+    diag = np.zeros(M.shape[0])
+    for n in range(M.shape[0]):
+        for m in range(M.shape[0]):
+            diag[n] += M[n, m] + M[m, n]
+        diag[n] -= M[n, n]
+
+    return diag
+
+# subtract non-diognal elements for diognal ones
+def subtract_from_diag(M):
+
+    M_out = np.copy(M)
+    
+    for n in range(M.shape[0]):
+        for m in range(M.shape[0]):
+            M_out[n, n] -= (M[n, m] + M[m, n])
+        M_out[n, n] += 2*M[n, n]
+
+    return M_out
+
+# need to be used after subspace on capacitance matrix to obtain an upper triangular matrix
+def sym_to_triangle(M_in):
+
+    M = np.copy(M_in)
+
+    # symmetrisation
+    for n in range(M.shape[0]):
+        for m in range(M.shape[1]):
+            
+            if(M[n, m] != 0): M[m, n] = M[n, m]
+
+    # to triangle
+    for n in range(M.shape[0]):
+        for m in range(n):
+            M[n, m] = 0
+
+    return M
+
 
 # adds a table enumeration
 def print_table(M, integer=False):
