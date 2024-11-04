@@ -156,18 +156,18 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         leakage_st[i, 0] = leakage_init[sort[i]]
         leakage_st[i, 1] = leakage_target[sort[i]]
         
-        leakage_param[i, 0] = np.around(leakage_k[sort[i]], rounding)
-        leakage_param[i, 1] = np.around(leakage_delta[sort[i]], rounding)
+        leakage_param[i, 0] = leakage_k[sort[i]]
+        leakage_param[i, 1] = leakage_delta[sort[i]]
         
-        tmp_1 = np.around(leakage_param[i, 0]**2/leakage_param[i, 1], rounding)
-        tmp_2 = np.around(leakage_param[i, 0]**2/leakage_param[i, 1]**2, rounding)
+        tmp_1 = leakage_param[i, 0]**2/leakage_param[i, 1]
+        tmp_2 = leakage_param[i, 0]**2/leakage_param[i, 1]**2
 
         string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}, k**2/∆**2={5}".format(leakage_st[i, 0], 
-                                                                                 leakage_st[i, 1], 
-                                                                                 leakage_param[i, 0], 
-                                                                                 leakage_param[i, 1], 
-                                                                                 tmp_1, 
-                                                                                 tmp_2))
+                                                                                        leakage_st[i, 1], 
+                                                                                        np.around(leakage_param[i, 0], rounding), 
+                                                                                        np.around(leakage_param[i, 1], rounding), 
+                                                                                        np.around(tmp_1, rounding), 
+                                                                                        np.around(tmp_2, rounding)))
     
     return leakage_st, leakage_param, string_list
 
