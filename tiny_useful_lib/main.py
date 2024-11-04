@@ -31,6 +31,13 @@ j=0.5*10**6
 S=(1000*500)*10**(-18)
 
 
+# make all non-zero matrix element equal to 1
+def to_ones(x):
+    if(x!=0): return 1
+    else: return 0
+to_ones = np.vectorize(to_ones)
+
+
 def subspace(M, indices):
     
     tmp = []
