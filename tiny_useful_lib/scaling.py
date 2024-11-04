@@ -58,7 +58,7 @@ def fluxonium_search(f01, f12, f03, bounds=[(2, 100), (0.5, 1.5), (0.2, 6)], wei
 
 # fun for searching of proper transmon
 
-def transmon_coup(f01, alpha, bounds=[(2, 100), (0.01, 3)]):
+def transmon_search(f01, alpha, bounds=[(2, 100), (0.01, 3)]):
 
     def fun(x):
         eigval, _, q = Transmon(x[0], 0, x[1], numOfLvls=5)
@@ -556,7 +556,7 @@ def zz_far_QC_test(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g_q1_
 def zz_far_QC_osc(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g_q1_q2, g_c1_c2, 
                       g_long=0, gO_long=0, gO_Q=0,  El=0.5, Ec=4, g_o=0):
 
-    # fun for zz calculation of 0-type cooplers with connection via an oscillator
+    # fun for zz calculation of 0-type couplers with connection via an oscillator
     # system: C-Q-O-C
     
     (spect_C1, phi_C1, q_C1) = map(np.copy, coup_1)
@@ -629,7 +629,7 @@ def zz_far_QC_osc(coup_1, qubit_1, coup_2, qubit_2, g_q1_c1, g_q1_c2, g_q2_c2, g
 
 def gap_one_side(Q, coup, g):
 
-    # calculation of zz between qubit and coopler = gap
+    # calculation of zz between qubit and coupler = gap
     
     (spect_Q, phi_Q, q_Q) = map(np.copy, Q)
     (spect_C, phi_C, q_C) = map(np.copy, coup)
