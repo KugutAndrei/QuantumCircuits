@@ -63,7 +63,7 @@ def kron(*opers):
     
 
 
-def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d'):
+def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', rounding=4):
 
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
     # mod 1: search based on k**2/delta**2, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta**2)_min
@@ -156,17 +156,18 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         leakage_st[i, 0] = leakage_init[sort[i]]
         leakage_st[i, 1] = leakage_target[sort[i]]
         
-        leakage_param[i, 0] = leakage_k[sort[i]]
-        leakage_param[i, 1] = leakage_delta[sort[i]]
+        leakage_param[i, 0] = np.around(leakage_k[sort[i]], rounding)
+        leakage_param[i, 1] = np.around(leakage_delta[sort[i]], rounding)
         
-        leakage_param[i, 0]**2/leakage_param[i, 1]
+        tmp_1 = np.around(leakage_param[i, 0]**2/leakage_param[i, 1], rounding)
+        tmp_2 = np.around(leakage_param[i, 0]**2/leakage_param[i, 1]**2, rounding)
 
         string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}, k**2/∆**2={5}".format(leakage_st[i, 0], 
-                                                                                         leakage_st[i, 1], 
-                                                                                         leakage_param[i, 0], 
-                                                                                         leakage_param[i, 1], 
-                                                                                         leakage_param[i, 0]**2/leakage_param[i, 1], 
-                                                                                         leakage_param[i, 0]**2/leakage_param[i, 1]**2))
+                                                                                 leakage_st[i, 1], 
+                                                                                 leakage_param[i, 0], 
+                                                                                 leakage_param[i, 1], 
+                                                                                 tmp_1, 
+                                                                                 tmp_2))
     
     return leakage_st, leakage_param, string_list
 
