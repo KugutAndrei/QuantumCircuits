@@ -645,7 +645,7 @@ def gap_one_side(Q, coup, g):
     return abs(spect[key[1, 1]] - spect[key[1, 0]] - spect[key[0, 1]])
 
 
-def light_gap_opt(Q, C, gap_t):
+def light_gap_opt(Q, C, gap_t, bounds=[(0.1, 0.3)]):
 
     # calculation of optimal g for target gap
     
@@ -653,7 +653,7 @@ def light_gap_opt(Q, C, gap_t):
         gap = gap_one_side(Q, C, g)
         return 1e8*(gap - gap_t)**2
     
-    opt = dual_annealing(loss, bounds=[(0.1, 0.3)], maxiter=40)
+    opt = dual_annealing(loss, bounds=bounds, maxiter=40)
     
     return opt.x[0]
 
