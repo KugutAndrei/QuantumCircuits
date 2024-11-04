@@ -244,7 +244,7 @@ def light_gap_opt(Q, C, gap_t):
         gap = gap_one_side(Q, C, g)
         return 1e8*(gap - gap_t)**2
 
-    opt = scp.optimize.dual_annealing(loss, bounds=[(0.1, 0.3)], maxiter=40)
+    opt = dual_annealing(loss, bounds=[(0.1, 0.3)], maxiter=40)
     
     return opt.x[0]
 
@@ -374,7 +374,7 @@ def g_qubits_opt_sim(qubit_1, qubit_2, coup, gap_target, regime=0, border=0.2, m
 
         return (abs(leakage_param[0, 1]) - gap_target)**2
 
-    sol = scp.optimize.minimize(gap_loss, x0=0.1)
+    sol = minimize(gap_loss, x0=0.1)
     g_c = sol.x[0]
 
     def zz_loss(g_qq):
@@ -393,7 +393,7 @@ def g_qubits_opt_sim(qubit_1, qubit_2, coup, gap_target, regime=0, border=0.2, m
         
         return zz**2
 
-    sol = scp.optimize.minimize(zz_loss, x0=0.01)
+    sol = minimize(zz_loss, x0=0.01)
     g_qq = sol.x[0]
 
     # емкостно смешиваем 3 подсистемы системы
@@ -482,19 +482,19 @@ def zz_far_QC_optimize(Q1, C1, Q2, C2, Q3, g_q1_c1, g_q2_c1, g_q2_c2, g_q3_c2, g
     if(optimizer == 'grad'):
 
         if(regime):
-            opt = scp.optimize.minimize(loss, x0=[0], bounds=[(-0.2, 0)])
+            opt = minimize(loss, x0=[0], bounds=[(-0.2, 0)])
             g = opt.x[0]
         else:
-            opt = scp.optimize.minimize(loss, x0=[0], bounds=[(0, 0.2)])
+            opt = minimize(loss, x0=[0], bounds=[(0, 0.2)])
             g = opt.x[0]
             
     elif(optimizer == 'root'):
         
         if(regime):
-            opt = scp.optimize.root(loss, x0=-0.01)
+            opt = root(loss, x0=-0.01)
             g = opt.x[0]
         else:
-            opt = scp.optimize.root(loss, x0=0.01)
+            opt = root(loss, x0=0.01)
             g = opt.x[0]
         
 
@@ -653,7 +653,7 @@ def light_gap_opt(Q, C, gap_t):
         gap = gap_one_side(Q, C, g)
         return 1e8*(gap - gap_t)**2
     
-    opt = scp.optimize.dual_annealing(loss, bounds=[(0.1, 0.3)], maxiter=40)
+    opt = dual_annealing(loss, bounds=[(0.1, 0.3)], maxiter=40)
     
     return opt.x[0]
 
