@@ -31,6 +31,19 @@ j=0.5*10**6
 S=(1000*500)*10**(-18)
 
 
+# rounding of number with n values after the first non-zero one
+def around(x, n):
+    
+    deg = np.log(x)/np.log(10)
+    
+    if(deg > 0): deg = int(deg)
+    else: deg = int(np.ceil(deg))
+        
+    deg -= n
+    
+    return np.around(x, -deg)
+
+
 # make all non-zero matrix element equal to 1
 def to_ones(x):
     if(x!=0): return 1
@@ -63,7 +76,7 @@ def kron(*opers):
     
 
 
-def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', rounding=4):
+def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', rounding=2):
 
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
     # mod 1: search based on k**2/delta**2, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta**2)_min
@@ -164,10 +177,10 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
 
         string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}, k**2/∆**2={5}".format(leakage_st[i, 0], 
                                                                                         leakage_st[i, 1], 
-                                                                                        np.around(leakage_param[i, 0], rounding), 
-                                                                                        np.around(leakage_param[i, 1], rounding), 
-                                                                                        np.around(tmp_1, rounding), 
-                                                                                        np.around(tmp_2, rounding)))
+                                                                                        around(leakage_param[i, 0], rounding), 
+                                                                                        around(leakage_param[i, 1], rounding), 
+                                                                                        around(tmp_1, rounding), 
+                                                                                        around(tmp_2, rounding)))
     
     return leakage_st, leakage_param, string_list
 
