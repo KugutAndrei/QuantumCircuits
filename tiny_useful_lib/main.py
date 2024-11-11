@@ -213,7 +213,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                                                                                         around(tmp_1, rounding), 
                                                                                         around(tmp_2, rounding)))
         else:
-            string_list.append("{0} -> {1} : k={2}, ∆={3}".format(leakage_st[i, 0], leakage_st[i, 1], 
+            string_list.append("{0} -> {1} : ∑|k_iv*k_vf/(fr_f-2fr_v)|={2}, ∆={3}".format(leakage_st[i, 0], leakage_st[i, 1], 
                                                                   around(leakage_param[i, 0], rounding), 
                                                                   around(leakage_param[i, 1], rounding)))
     
