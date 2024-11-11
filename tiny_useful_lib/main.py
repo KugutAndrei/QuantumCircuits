@@ -105,8 +105,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
     f_0 = abs(spectrum[init_st] - spectrum[target_st])
 
     # arrays for output
-    leakage_init = []
-    leakage_target = []
+    leakage_trans = []
     leakage_k = []
     leakage_delta = []
 
@@ -131,25 +130,31 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                 continue
 
             if(mod==0 and k**2/delta > border):
-                    
-                leakage_init.append(init)
-                leakage_target.append(fin)
-                leakage_k.append(k)
-                leakage_delta.append(delta)
+                
+                flag = True
+                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                if(flag):
+                    leakage_trans.append([init, fin])
+                    leakage_k.append(k)
+                    leakage_delta.append(delta)
                 
             elif(mod==1 and k**2/delta**2 > border):
-                    
-                leakage_init.append(init)
-                leakage_target.append(fin)
-                leakage_k.append(k)
-                leakage_delta.append(delta)
+                
+                flag = True
+                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                if(flag):
+                    leakage_trans.append([init, fin])
+                    leakage_k.append(k)
+                    leakage_delta.append(delta)
 
             elif(mod==2 and k > border[0] and delta < border[1]):
                 
-                leakage_init.append(init)
-                leakage_target.append(fin)
-                leakage_k.append(k)
-                leakage_delta.append(delta)
+                flag = True
+                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                if(flag):
+                    leakage_trans.append([init, fin])
+                    leakage_k.append(k)
+                    leakage_delta.append(delta)
                
             elif(mod==3):
                 
@@ -170,11 +175,13 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                     
                 delta = abs(abs(spectrum[init] - spectrum[fin])/2 - f_0)
                 
-                if(k_multi > border[0] and delta < border[1]):
-                    leakage_init.append(init)
-                    leakage_target.append(fin)
-                    leakage_k.append(k_multi)
-                    leakage_delta.append(delta)
+                flag = True
+                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                if(flag):
+                    if(k_multi > border[0] and delta < border[1]):
+                        leakage_trans.append([init, fin])
+                        leakage_k.append(k_multi)
+                        leakage_delta.append(delta)
 
     if(mod==0):
         tmp = np.asarray(leakage_k)**2/np.asarray(leakage_delta)
@@ -196,8 +203,8 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
     
     for i in range(sort.shape[0]):
         
-        leakage_st[i, 0] = leakage_init[sort[i]]
-        leakage_st[i, 1] = leakage_target[sort[i]]
+        leakage_st[i, 0] = leakage_trans[sort[i]][0]
+        leakage_st[i, 1] = leakage_trans[sort[i]][1]
         
         leakage_param[i, 0] = leakage_k[sort[i]]
         leakage_param[i, 1] = leakage_delta[sort[i]]
