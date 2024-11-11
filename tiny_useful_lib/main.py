@@ -132,7 +132,8 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
             if(mod==0 and k**2/delta > border):
                 
                 flag = True
-                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                for trans in leakage_trans: 
+                    if(trans[0] == init and trans[1] == fin): flag = False
                 if(flag):
                     leakage_trans.append([init, fin])
                     leakage_k.append(k)
@@ -141,7 +142,8 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
             elif(mod==1 and k**2/delta**2 > border):
                 
                 flag = True
-                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                for trans in leakage_trans: 
+                    if(trans[0] == init and trans[1] == fin): flag = False
                 if(flag):
                     leakage_trans.append([init, fin])
                     leakage_k.append(k)
@@ -150,7 +152,8 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
             elif(mod==2 and k > border[0] and delta < border[1]):
                 
                 flag = True
-                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                for trans in leakage_trans: 
+                    if(trans[0] == init and trans[1] == fin): flag = False
                 if(flag):
                     leakage_trans.append([init, fin])
                     leakage_k.append(k)
@@ -176,7 +179,8 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                 delta = abs(abs(spectrum[init] - spectrum[fin])/2 - f_0)
                 
                 flag = True
-                for trans in leakage_trans: if(trans[0] == init and trans[1] == fin): flag = False
+                for trans in leakage_trans: 
+                    if(trans[0] == init and trans[1] == fin): flag = False
                 if(flag):
                     if(k_multi > border[0] and delta < border[1]):
                         leakage_trans.append([init, fin])
