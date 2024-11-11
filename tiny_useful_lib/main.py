@@ -81,6 +81,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
     # mod 1: search based on k**2/delta**2, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta**2)_min
     # mod 2: search with border[0] – minimal value of k and border[1] – maximum transition's frequencies delta
+    # mod 3: TWO-PHOTON LEAKAGE with border[0] – minimum of k=sum_v(|k_iv*k_vf/(f-2f_virt)|) and border[1] – maximum |f_signal-f/2|
     
     if(mod=='k^2/d' or mod==0):
         mod = 0
@@ -88,6 +89,8 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         mod = 1
     elif(mod=='k_min, d_max' or mod==2):
         mod = 2
+    elif(mod=='two-photon' or mod==3):
+        mod = 3
         
     # output: leakage_st[0] – init leakage states, leakage_st[1] – target leakage states; leakage_param[0] – k, leakage_param[1] – delta
     
@@ -121,31 +124,53 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
 
             m = abs(pert_oper[init, fin])
             k = m/m_0
-            delta_f = abs(abs(spectrum[init] - spectrum[fin]) - f_0)
+            delta = abs(abs(spectrum[init] - spectrum[fin]) - f_0)
 
-            if(delta_f == 0):
+            if(delta == 0):
                 continue
 
-            if(mod==0 and k**2/delta_f > border):
+            if(mod==0 and k**2/delta > border):
                     
                 leakage_init.append(init)
                 leakage_target.append(fin)
                 leakage_k.append(k)
-                leakage_delta.append(delta_f)
+                leakage_delta.append(delta)
                 
-            elif(mod==1 and k**2/delta_f**2 > border):
+            elif(mod==1 and k**2/delta**2 > border):
                     
                 leakage_init.append(init)
                 leakage_target.append(fin)
                 leakage_k.append(k)
-                leakage_delta.append(delta_f)
+                leakage_delta.append(delta)
 
-            elif(mod==2 and k > border[0] and delta_f < border[1]):
+            elif(mod==2 and k > border[0] and delta < border[1]):
                 
                 leakage_init.append(init)
                 leakage_target.append(fin)
                 leakage_k.append(k)
-                leakage_delta.append(delta_f)
+                leakage_delta.append(delta)
+               
+            elif(mod==3):
+                
+                k_multi = 0
+                
+                for virt in range(spectrum.shape[0]):
+                    
+                    flag = False
+                    for st in full_st_list:
+                        if(virt == st):
+                            flag = True
+
+                    if(flag):
+                        continue
+                        
+                    k_multi += abs(pert_oper[init, virt]*pert_oper[virt, fin]/m_0**2\
+                    /(spectrum[fin] - 2*spectrum[virt] + spectrum[init]))
+                    
+                leakage_init.append(init)
+                leakage_target.append(fin)
+                leakage_k.append(k_multi)
+                leakage_delta.append(abs(abs(spectrum[init] - spectrum[fin])/2 - f_0))
 
     if(mod==0):
         tmp = np.asarray(leakage_k)**2/np.asarray(leakage_delta)
@@ -157,8 +182,9 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         sort = np.argsort(np.asarray(tmp))
         sort = np.flip(sort)
 
-    if(mod==2):
+    if(mod==2 or mod==3):
         sort = np.argsort(np.asarray(leakage_delta))
+        
 
     leakage_st = np.zeros((sort.shape[0], 2), int)
     leakage_param = np.zeros((sort.shape[0], 2))
