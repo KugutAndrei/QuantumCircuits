@@ -76,7 +76,8 @@ def kron(*opers):
     
 
 
-def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', rounding=2):
+def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', 
+                    rounding=3, multiphoton_trigger=1e-6):
 
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
     # mod 1: search based on k**2/delta**2, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta**2)_min
@@ -167,6 +168,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                     k_multi += abs(pert_oper[init, virt]*pert_oper[virt, fin]/m_0**2\
                     /(spectrum[fin] - 2*spectrum[virt] + spectrum[init]))
                     
+                if(k_multi > multiphoton_trigger)
                 leakage_init.append(init)
                 leakage_target.append(fin)
                 leakage_k.append(k_multi)
@@ -201,12 +203,17 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         tmp_1 = leakage_param[i, 0]**2/leakage_param[i, 1]
         tmp_2 = leakage_param[i, 0]**2/leakage_param[i, 1]**2
 
-        string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}, k**2/∆**2={5}".format(leakage_st[i, 0], 
+        if(mod!=3):
+            string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}, k**2/∆**2={5}".format(leakage_st[i, 0], 
                                                                                         leakage_st[i, 1], 
                                                                                         around(leakage_param[i, 0], rounding), 
                                                                                         around(leakage_param[i, 1], rounding), 
                                                                                         around(tmp_1, rounding), 
                                                                                         around(tmp_2, rounding)))
+        else:
+            string_list.append("{0} -> {1} : k={2}, ∆={3}".format(leakage_st[i, 0], leakage_st[i, 1], 
+                                                                  around(leakage_param[i, 0], rounding), 
+                                                                  around(leakage_param[i, 1], rounding)))
     
     return leakage_st, leakage_param, string_list
 
