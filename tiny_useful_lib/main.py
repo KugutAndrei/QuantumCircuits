@@ -168,11 +168,13 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                     k_multi += abs(pert_oper[init, virt]*pert_oper[virt, fin]/m_0**2\
                     /(spectrum[fin] - 2*spectrum[virt] + spectrum[init]))
                     
-                if(k_multi > multiphoton_trigger):
+                delta = abs(abs(spectrum[init] - spectrum[fin])/2 - f_0)
+                
+                if(k_multi > border[0] and delta < border[1]):
                     leakage_init.append(init)
                     leakage_target.append(fin)
                     leakage_k.append(k_multi)
-                    leakage_delta.append(abs(abs(spectrum[init] - spectrum[fin])/2 - f_0))
+                    leakage_delta.append(delta)
 
     if(mod==0):
         tmp = np.asarray(leakage_k)**2/np.asarray(leakage_delta)
