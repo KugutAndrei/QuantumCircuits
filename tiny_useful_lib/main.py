@@ -246,29 +246,45 @@ def SQUID_flux_finder(Ej1, Ej2, Ej):
 
     return Phi/np.pi
 
+# funcs for index management
+def index_linear(coord_in, dim_in):
 
-def index_reshape(index, shape_in):
+    # return index in lianerized mixed basis (reverse of the next function)
+    coord = np.asarray(coord_in)
+    dim = np.asarray(dim_in)
+
+    index = 0
+    
+    for n in range(coord.shape[0] - 1):
+
+        index = (index + coord[n])*dim[n + 1]
+
+    return index
+
+
+def index_coord(index, dim_in):
     # rebuild index in tensor product space A@B@.. into N coordinat 
     # representation i -> (a_i, b_i, ...) 
-    # shape_in = (dim(A), dim(B), ...)
+    # dim_in = (dim(A), dim(B), ...)
     
-    shape = np.copy(np.asarray(shape_in))
-    coord = np.zeros(shape.shape[0], int)
+    dim = np.copy(np.asarray(dim_in))
+    coord = np.zeros(dim.shape[0], int)
 
-    shape[0] = 1
+    dim[0] = 1
     
-    for it in range(shape.shape[0]):
+    for it in range(dim.shape[0]):
 
-        d_prod = np.prod(shape)
+        d_prod = np.prod(dim)
         coord[it] = int(index//d_prod)
         index -= coord[it]*d_prod
         
-        if(it < shape.shape[0] - 1):
-            shape[it + 1] = 1
+        if(it < dim.shape[0] - 1):
+            dim[it + 1] = 1
     
     return coord
 
 
+# Funcs for fits
 def parabolic_fit(X_in, Y_in, bounds, maxiter=300, no_local_search=False, x0=None):
     # annealing based parabolic fitter
     
