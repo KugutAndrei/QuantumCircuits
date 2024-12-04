@@ -661,6 +661,111 @@ def Transmon(Ej1, Ej2, Ec, gridSize=None, numOfLvls=100, F=0, Q=0):
     
     return (eigEnergies, phi, q)
 
+def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
+    # расшифровывает собственные состояния тензорных произведений 2 и 3 систем
+    tmp = np.asarray(nS)
+    outList = []
+    
+    if(tmp.shape[0] == 2):
+        N1 = tmp[0]
+        N2 = tmp[1]
+        
+        key = np.zeros((N1, N2), dtype=object)
+        purity = np.zeros(N1*N2)
+        
+        for n in range(states.shape[1]):
+            s = abs(states[:, n])
+            s = s.reshape(N1, N2)
+            
+            oldNum = key[np.unravel_index(s.argmax(), s.shape)]
+            purity[n] = abs(s[np.unravel_index(s.argmax(), s.shape)])**2 
+            
+            if(oldNum != 0):
+                if(purity[oldNum] <= purity[n]):
+                    key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            else:
+                key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            if(stList):
+                string = str(n) + ': '
+                
+                while(True):
+                    localPur = abs(s[np.unravel_index(s.argmax(), s.shape)])**2
+                    if(localPur > dirtyBorder):
+                        string += str(localPur * 100)+'% of '+str(np.unravel_index(s.argmax(), s.shape))+"\n    "
+                    else:
+                        break
+                    
+                    s[np.unravel_index(s.argmax(), s.shape)] = 0
+                    
+                outList.append(string)
+            
+        # выделяем подавленные состояния с помощью None
+        for n in range(key.shape[0]):
+            for m in range(key.shape[1]):
+                    if(n + m != 0 and key[n, m] == 0):
+                        key[n, m] = None
+        
+        if(stList):
+            return (key, purity, outList)
+        else:
+            return (key, purity)
+        
+        
+    elif(tmp.shape[0] == 3):
+        N1 = tmp[0]
+        N2 = tmp[1]
+        N3 = tmp[2]
+        
+        key = np.zeros((N1, N2, N3), dtype=object)
+        purity = np.zeros(N1*N2*N3)
+        
+        for n in range(states.shape[1]):
+            s = abs(states[:, n])
+            s = s.reshape(N1, N2, N3)
+            
+            oldNum = key[np.unravel_index(s.argmax(), s.shape)]
+            purity[n] = abs(s[np.unravel_index(s.argmax(), s.shape)])**2 
+            
+            if(oldNum != 0):
+                if(purity[oldNum] <= purity[n]):
+                    key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            else:
+                key[np.unravel_index(s.argmax(), s.shape)] = int(n)
+                    
+            if(stList):
+                string = str(n) + ': '
+                
+                while(True):
+                    localPur = abs(s[np.unravel_index(s.argmax(), s.shape)])**2
+                    if(localPur > dirtyBorder):
+                        string += str(localPur * 100)+'% of '+str(np.unravel_index(s.argmax(), s.shape))+"\n    "
+                    else:
+                        break
+                    
+                    s[np.unravel_index(s.argmax(), s.shape)] = 0
+                    
+                outList.append(string)
+            
+        # выделяем подавленные состояния с помощью None
+        for n in range(key.shape[0]):
+            for m in range(key.shape[1]):
+                for k in range(key.shape[2]):
+                    if(n + m + k != 0 and key[n, m, k] == 0):
+                        key[n, m, k] = None
+                        
+        if(stList):
+            return (key, purity, outList)
+        else:
+            return (key, purity)
+        
+        
+    else:
+        print("To much")
+        return 1
+    
 # new
 def mix_two_sys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray([]), 
                 g=0, numOfLvls=5, purity_calc=True, stList=True, dirtyBorder=0.01,
@@ -703,7 +808,7 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
     if(eigVectors_output): output.append(eigVectors)
         
     if(purity_calc):
-        purity_info = tul.StatesPurity(mixStates, (dim_1, dim_2), stList=stList, dirtyBorder=dirtyBorder)
+        purity_info = StatesPurity(mixStates, (dim_1, dim_2), stList=stList, dirtyBorder=dirtyBorder)
         output.append(purity_info)
         
     # перетягиваем операторы
@@ -979,7 +1084,7 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
     if(eigVectors_output): output.append(eigVectors)
     
     if(purity_calc):
-        purity_info = tul.StatesPurity(mixStates, (dim_1, dim_2, dim_3), stList=stList, dirtyBorder=dirtyBorder)
+        purity_info = StatesPurity(mixStates, (dim_1, dim_2, dim_3), stList=stList, dirtyBorder=dirtyBorder)
         output.append(purity_info)
         
     # перетягиваем операторы
@@ -1217,112 +1322,6 @@ def UnitMDecomposer(U):
             return
     
     return decomp
-
-
-def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
-    # расшифровывает собственные состояния тензорных произведений 2 и 3 систем
-    tmp = np.asarray(nS)
-    outList = []
-    
-    if(tmp.shape[0] == 2):
-        N1 = tmp[0]
-        N2 = tmp[1]
-        
-        key = np.zeros((N1, N2), dtype=object)
-        purity = np.zeros(N1*N2)
-        
-        for n in range(states.shape[1]):
-            s = abs(states[:, n])
-            s = s.reshape(N1, N2)
-            
-            oldNum = key[np.unravel_index(s.argmax(), s.shape)]
-            purity[n] = abs(s[np.unravel_index(s.argmax(), s.shape)])**2 
-            
-            if(oldNum != 0):
-                if(purity[oldNum] <= purity[n]):
-                    key[np.unravel_index(s.argmax(), s.shape)] = int(n)
-                    
-            else:
-                key[np.unravel_index(s.argmax(), s.shape)] = int(n)
-                    
-            if(stList):
-                string = str(n) + ': '
-                
-                while(True):
-                    localPur = abs(s[np.unravel_index(s.argmax(), s.shape)])**2
-                    if(localPur > dirtyBorder):
-                        string += str(localPur * 100)+'% of '+str(np.unravel_index(s.argmax(), s.shape))+"\n    "
-                    else:
-                        break
-                    
-                    s[np.unravel_index(s.argmax(), s.shape)] = 0
-                    
-                outList.append(string)
-            
-        # выделяем подавленные состояния с помощью None
-        for n in range(key.shape[0]):
-            for m in range(key.shape[1]):
-                    if(n + m != 0 and key[n, m] == 0):
-                        key[n, m] = None
-        
-        if(stList):
-            return (key, purity, outList)
-        else:
-            return (key, purity)
-        
-        
-    elif(tmp.shape[0] == 3):
-        N1 = tmp[0]
-        N2 = tmp[1]
-        N3 = tmp[2]
-        
-        key = np.zeros((N1, N2, N3), dtype=object)
-        purity = np.zeros(N1*N2*N3)
-        
-        for n in range(states.shape[1]):
-            s = abs(states[:, n])
-            s = s.reshape(N1, N2, N3)
-            
-            oldNum = key[np.unravel_index(s.argmax(), s.shape)]
-            purity[n] = abs(s[np.unravel_index(s.argmax(), s.shape)])**2 
-            
-            if(oldNum != 0):
-                if(purity[oldNum] <= purity[n]):
-                    key[np.unravel_index(s.argmax(), s.shape)] = int(n)
-                    
-            else:
-                key[np.unravel_index(s.argmax(), s.shape)] = int(n)
-                    
-            if(stList):
-                string = str(n) + ': '
-                
-                while(True):
-                    localPur = abs(s[np.unravel_index(s.argmax(), s.shape)])**2
-                    if(localPur > dirtyBorder):
-                        string += str(localPur * 100)+'% of '+str(np.unravel_index(s.argmax(), s.shape))+"\n    "
-                    else:
-                        break
-                    
-                    s[np.unravel_index(s.argmax(), s.shape)] = 0
-                    
-                outList.append(string)
-            
-        # выделяем подавленные состояния с помощью None
-        for n in range(key.shape[0]):
-            for m in range(key.shape[1]):
-                for k in range(key.shape[2]):
-                    if(n + m + k != 0 and key[n, m, k] == 0):
-                        key[n, m, k] = None
-                        
-        if(stList):
-            return (key, purity, outList)
-        else:
-            return (key, purity)
-        
-        
-    else:
-        print("To much")
-        return 1
     
     
 def FluxoniumFitter(specDots, borders, 
