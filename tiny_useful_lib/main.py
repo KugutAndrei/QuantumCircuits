@@ -661,7 +661,82 @@ def Transmon(Ej1, Ej2, Ec, gridSize=None, numOfLvls=100, F=0, Q=0):
     
     return (eigEnergies, phi, q)
 
-
+# new
+def mix_two_sys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray([]), 
+                g=0, numOfLvls=5, purity_calc=True, stList=True, dirtyBorder=0.01,
+                eigVectors_output=False, project=True):
+    # связываем две системы через операторы q1 и q2, попутно расширяя их операторы на общее пространство
+    # opers – список из матриц операторов соотв. системы
+    
+    dim_1 = spect1.shape[0]
+    dim_2 = spect2.shape[0]
+    
+    # единичная матрица 
+    E1 = np.diag(np.ones(dim_1))
+    E2 = np.diag(np.ones(dim_2))
+    
+    # диагонализованные гамильтонианы
+    H1 = np.diag(spect1)
+    H2 = np.diag(spect2)
+    
+    # объединяем линейные пространства
+    H1 = np.kron(H1, E2)
+    H2 = np.kron(E1, H2)    
+    
+    # q в общем базисе
+    M = np.kron(q1, q2)
+    
+    # полный гамильтониан
+    H = H1 + H2 + g * M
+                                
+    # диагонализация
+    (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
+    
+    order=np.argsort(np.real(eigEnergies))
+    eigEnergies=eigEnergies[order]
+    eigVectors=eigVectors[:, order]
+        
+    # сдвигаем 0
+    eigEnergies = eigEnergies - eigEnergies[0]
+    output = [eigEnergies]
+    
+    if(eigVectors_output): output.append(eigVectors)
+        
+    if(purity_calc):
+        purity_info = tul.StatesPurity(mixStates, (dim_1, dim_2), stList=stList, dirtyBorder=dirtyBorder)
+        output.append(purity_info)
+        
+    # перетягиваем операторы
+    if(opers1.shape[0] != 0):
+        if(project):
+            newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers1.shape[0]):
+                M = np.kron(opers1[i, :, :], E2)
+                newOpers1[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+        
+        else:
+            newOpers1 = np.zeros((opers1.shape[0], dim_1*dim_2, dim_1*dim_2), dtype=complex)
+            for i in range(opers1.shape[0]):
+                newOpers1[i, :, :] = np.kron(opers1[i, :, :], E2)
+        output.append(opers1)
+        
+    if(opers2.shape[0] != 0):
+        if(project):
+            newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers2.shape[0]):
+                M = np.kron(E1, opers2[i, :, :])
+                newOpers2[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+        
+        else:
+            newOpers2 = np.zeros((opers2.shape[0], dim_1*dim_2, dim_1*dim_2), dtype=complex)
+            for i in range(opers2.shape[0]):
+                newOpers2[i, :, :] = np.kron(E1, opers2[i, :, :])
+        output.append(opers2)
+        
+    return output
+    
+    
+# old
 def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray([]), 
                 g=0, numOfLvls=5, project=True):
     # связываем две системы через операторы q1 и q2, попутно расширяя их операторы на общее пространство
@@ -735,7 +810,222 @@ def MixOfTwoSys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
         return (eigEnergies, eigVectors, H, newOpers2)
     else:
         return (eigEnergies, eigVectors, H)
+        
 
+# old
+def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None, q31=None, q13=None, 
+                  opers1=np.asarray([]), 
+                  opers2=np.asarray([]),
+                  opers3=np.asarray([]),
+                  g12=None, 
+                  g23=None,
+                  g31=None,
+                  numOfLvls=10, project=True):
+
+    
+    size1 = spect1.size
+    size2 = spect2.size
+    size3 = spect3.size
+    
+    # единичная матрица 
+    E1 = np.diag(np.ones(size1))
+    E2 = np.diag(np.ones(size2))
+    E3 = np.diag(np.ones(size3))
+    
+    # диагонализованные гамильтонианы
+    H1 = np.diag(spect1)
+    H2 = np.diag(spect2)
+    H3 = np.diag(spect3)
+    
+    # объединяем линейные пространства
+    H1 = np.kron(np.kron(H1, E2), E3)
+    H2 = np.kron(np.kron(E1, H2), E3)
+    H3 = np.kron(np.kron(E1, E2), H3)
+    
+    # полный гамильтониан
+    H = H1 + H2 + H3
+          
+    if(g12 != None):
+        M = np.kron(np.kron(q12, q21), E3)
+        H = H + g12 * M
+        
+    if(g23 != None):
+        M = np.kron(np.kron(E1, q23), q32)
+        H = H + g23 * M
+        
+    if(g31 != None):
+        M = np.kron(np.kron(q13, E2), q31)
+        H = H + g31 * M
+        
+        
+    # диагонализация
+    (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
+        
+    order=np.argsort(np.real(eigEnergies))
+    eigEnergies=eigEnergies[order]
+    eigVectors=eigVectors[:, order]
+    
+    if(project):
+        pr = eigVectors
+        H = dagger(pr) @ H @ pr
+    
+    eigEnergies = eigEnergies - eigEnergies[0]
+    
+    corn = [eigEnergies, eigVectors, H]
+    
+    # перетягиваем операторы
+    if(opers1.shape[0] != 0):
+        if(project):
+            newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers1.shape[0]):
+                M = np.kron(np.kron(opers1[i, :, :], E2), E3)
+                newOpers1[i, :, :] = dagger(pr) @ M @ pr
+            
+        else:
+            newOpers1 = np.zeros((opers1.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
+            for i in range(opers1.shape[0]):
+                newOpers1[i, :, :] = np.kron(np.kron(opers1[i, :, :], E2), E3)
+            
+        corn.append(newOpers1)
+    
+    if(opers2.shape[0] != 0):
+        if(project):
+            newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers2.shape[0]):
+                M = np.kron(np.kron(E1, opers2[i, :, :]), E3)
+                newOpers2[i, :, :] = dagger(pr) @ M @ pr
+                
+        else: 
+            newOpers2 = np.zeros((opers2.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
+            for i in range(opers2.shape[0]):
+                newOpers2[i, :, :] = np.kron(np.kron(E1, opers2[i, :, :]), E3)
+            
+        corn.append(newOpers2)
+        
+    if(opers3.shape[0] != 0):
+        if(project):
+            newOpers3 = np.zeros((opers3.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers3.shape[0]):
+                M = np.kron(np.kron(E1, E2), opers3[i, :, :])
+                newOpers3[i, :, :] = dagger(pr) @ M @ pr
+        else:        
+            newOpers3 = np.zeros((opers3.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
+            for i in range(opers3.shape[0]):
+                newOpers3[i, :, :] = np.kron(np.kron(E1, E2), opers3[i, :, :])
+            
+        corn.append(newOpers3)
+        
+    
+    return tuple(corn)
+
+# new
+def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None, q31=None, q13=None, 
+                  opers1=np.asarray([]), 
+                  opers2=np.asarray([]),
+                  opers3=np.asarray([]),
+                  g12=None, 
+                  g23=None,
+                  g31=None,
+                  numOfLvls=10, purity_calc=True, stList=True, dirtyBorder=0.01,
+                  eigVectors_output=False, project=True):
+
+    
+    dim_1 = spect1.shape[0]
+    dim_2 = spect2.shape[0]
+    dim_3 = spect3.shape[0]
+    
+    # единичная матрица 
+    E1 = np.diag(np.ones(dim_1))
+    E2 = np.diag(np.ones(dim_2))
+    E3 = np.diag(np.ones(dim_3))
+    
+    # диагонализованные гамильтонианы
+    H1 = np.diag(spect1)
+    H2 = np.diag(spect2)
+    H3 = np.diag(spect3)
+    
+    # объединяем линейные пространства
+    H1 = np.kron(np.kron(H1, E2), E3)
+    H2 = np.kron(np.kron(E1, H2), E3)
+    H3 = np.kron(np.kron(E1, E2), H3)
+    
+    # полный гамильтониан
+    H = H1 + H2 + H3
+          
+    if(g12 != None):
+        M = np.kron(np.kron(q12, q21), E3)
+        H = H + g12 * M
+        
+    if(g23 != None):
+        M = np.kron(np.kron(E1, q23), q32)
+        H = H + g23 * M
+        
+    if(g31 != None):
+        M = np.kron(np.kron(q13, E2), q31)
+        H = H + g31 * M
+        
+        
+    # диагонализация
+    (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
+        
+    order=np.argsort(np.real(eigEnergies))
+    eigEnergies=eigEnergies[order]
+    eigVectors=eigVectors[:, order]
+    
+    eigEnergies = eigEnergies - eigEnergies[0]
+    
+    output = [eigEnergies]
+    
+    if(eigVectors_output): output.append(eigVectors)
+    
+    if(purity_calc):
+        purity_info = tul.StatesPurity(mixStates, (dim_1, dim_2, dim_3), stList=stList, dirtyBorder=dirtyBorder)
+        output.append(purity_info)
+        
+    # перетягиваем операторы
+    if(opers1.shape[0] != 0):
+        if(project):
+            newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers1.shape[0]):
+                M = np.kron(np.kron(opers1[i, :, :], E2), E3)
+                newOpers1[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+            
+        else:
+            newOpers1 = np.zeros((opers1.shape[0], dim_1*dim_2*dim_3, dim_1*dim_2*dim_3), dtype=complex)
+            for i in range(opers1.shape[0]):
+                newOpers1[i, :, :] = np.kron(np.kron(opers1[i, :, :], E2), E3)
+            
+        output.append(newOpers1)
+    
+    if(opers2.shape[0] != 0):
+        if(project):
+            newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers2.shape[0]):
+                M = np.kron(np.kron(E1, opers2[i, :, :]), E3)
+                newOpers2[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+                
+        else: 
+            newOpers2 = np.zeros((opers2.shape[0], dim_1*dim_2*dim_3, dim_1*dim_2*dim_3), dtype=complex)
+            for i in range(opers2.shape[0]):
+                newOpers2[i, :, :] = np.kron(np.kron(E1, opers2[i, :, :]), E3)
+            
+        output.append(newOpers2)
+        
+    if(opers3.shape[0] != 0):
+        if(project):
+            newOpers3 = np.zeros((opers3.shape[0], numOfLvls, numOfLvls), dtype=complex)
+            for i in range(opers3.shape[0]):
+                M = np.kron(np.kron(E1, E2), opers3[i, :, :])
+                newOpers3[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+        else:        
+            newOpers3 = np.zeros((opers3.shape[0], dim_1*dim_2*dim_3, dim_1*dim_2*dim_3), dtype=complex)
+            for i in range(opers3.shape[0]):
+                newOpers3[i, :, :] = np.kron(np.kron(E1, E2), opers3[i, :, :])
+            
+        output.append(newOpers3)
+        
+    
+    return output
 
 
 def Graphs(t, X, x='x', y='y', full=False, save=False, filename='', xborders=None, yborders=None, lsize=10, grid=True, subGrid=True):
@@ -867,112 +1157,6 @@ def LindbladLin(H, L):
                OperLin(E, dagger(L[n])@L[n]))
         
     return M
-        
-
-def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None, q31=None, q13=None, 
-                  opers1=np.asarray([]), 
-                  opers2=np.asarray([]),
-                  opers3=np.asarray([]),
-                  g12=None, 
-                  g23=None,
-                  g31=None,
-                  numOfLvls=10, project=True):
-
-    
-    size1 = spect1.size
-    size2 = spect2.size
-    size3 = spect3.size
-    
-    # единичная матрица 
-    E1 = np.diag(np.ones(size1))
-    E2 = np.diag(np.ones(size2))
-    E3 = np.diag(np.ones(size3))
-    
-    # диагонализованные гамильтонианы
-    H1 = np.diag(spect1)
-    H2 = np.diag(spect2)
-    H3 = np.diag(spect3)
-    
-    # объединяем линейные пространства
-    H1 = np.kron(np.kron(H1, E2), E3)
-    H2 = np.kron(np.kron(E1, H2), E3)
-    H3 = np.kron(np.kron(E1, E2), H3)
-    
-    # полный гамильтониан
-    H = H1 + H2 + H3
-          
-    if(g12 != None):
-        M = np.kron(np.kron(q12, q21), E3)
-        H = H + g12 * M
-        
-    if(g23 != None):
-        M = np.kron(np.kron(E1, q23), q32)
-        H = H + g23 * M
-        
-    if(g31 != None):
-        M = np.kron(np.kron(q13, E2), q31)
-        H = H + g31 * M
-        
-        
-    # диагонализация
-    (eigEnergies, eigVectors) = eigsh(H, k=numOfLvls, which='SA', maxiter=4000)
-        
-    order=np.argsort(np.real(eigEnergies))
-    eigEnergies=eigEnergies[order]
-    eigVectors=eigVectors[:, order]
-    
-    if(project):
-        pr = eigVectors
-        H = dagger(pr) @ H @ pr
-    
-    eigEnergies = eigEnergies - eigEnergies[0]
-    
-    corn = [eigEnergies, eigVectors, H]
-    
-    # перетягиваем операторы
-    if(opers1.shape[0] != 0):
-        if(project):
-            newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers1.shape[0]):
-                M = np.kron(np.kron(opers1[i, :, :], E2), E3)
-                newOpers1[i, :, :] = dagger(pr) @ M @ pr
-            
-        else:
-            newOpers1 = np.zeros((opers1.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
-            for i in range(opers1.shape[0]):
-                newOpers1[i, :, :] = np.kron(np.kron(opers1[i, :, :], E2), E3)
-            
-        corn.append(newOpers1)
-    
-    if(opers2.shape[0] != 0):
-        if(project):
-            newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers2.shape[0]):
-                M = np.kron(np.kron(E1, opers2[i, :, :]), E3)
-                newOpers2[i, :, :] = dagger(pr) @ M @ pr
-                
-        else: 
-            newOpers2 = np.zeros((opers2.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
-            for i in range(opers2.shape[0]):
-                newOpers2[i, :, :] = np.kron(np.kron(E1, opers2[i, :, :]), E3)
-            
-        corn.append(newOpers2)
-        
-    if(opers3.shape[0] != 0):
-        if(project):
-            newOpers3 = np.zeros((opers3.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers3.shape[0]):
-                M = np.kron(np.kron(E1, E2), opers3[i, :, :])
-                newOpers3[i, :, :] = dagger(pr) @ M @ pr
-        else:        
-            newOpers3 = np.zeros((opers3.shape[0], size1*size2*size3, size1*size2*size3), dtype=complex)
-            for i in range(opers3.shape[0]):
-                newOpers3[i, :, :] = np.kron(np.kron(E1, E2), opers3[i, :, :])
-            
-        corn.append(newOpers3)
-        
-    
-    return tuple(corn)
 
 
 def UnitMDecomposer(U):
