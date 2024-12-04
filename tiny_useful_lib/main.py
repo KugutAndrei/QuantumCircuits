@@ -808,7 +808,7 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
     if(eigVectors_output): output.append(eigVectors)
         
     if(purity_calc):
-        purity_info = StatesPurity(mixStates, (dim_1, dim_2), stList=stList, dirtyBorder=dirtyBorder)
+        purity_info = StatesPurity(eigVectors, (dim_1, dim_2), stList=stList, dirtyBorder=dirtyBorder)
         output.append(purity_info)
         
     # перетягиваем операторы
@@ -1084,7 +1084,7 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
     if(eigVectors_output): output.append(eigVectors)
     
     if(purity_calc):
-        purity_info = StatesPurity(mixStates, (dim_1, dim_2, dim_3), stList=stList, dirtyBorder=dirtyBorder)
+        purity_info = StatesPurity(eigVectors, (dim_1, dim_2, dim_3), stList=stList, dirtyBorder=dirtyBorder)
         output.append(purity_info)
         
     # перетягиваем операторы
