@@ -767,7 +767,7 @@ def StatesPurity(states, nS, stList=False, dirtyBorder=0.01):
         return 1
     
 # new
-def mix_two_sys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray([]), 
+def mix_two_sys(spect1, spect2, q1, q2, opers1=[], opers2=[], 
                 g=0, numOfLvls=5, purity_calc=True, stList=True, dirtyBorder=0.01,
                 eigVectors_output=False, project=True):
     # связываем две системы через операторы q1 и q2, попутно расширяя их операторы на общее пространство
@@ -812,30 +812,28 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=np.asarray([]), opers2=np.asarray
         output.append(purity_info)
         
     # перетягиваем операторы
-    if(opers1.shape[0] != 0):
+    if(len(opers1) != 0):
+        newOpers1 = []
         if(project):
-            newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers1.shape[0]):
-                M = np.kron(opers1[i, :, :], E2)
-                newOpers1[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+            for i in range(len(opers1)):
+                M = np.kron(opers1[i], E2)
+                newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
         
         else:
-            newOpers1 = np.zeros((opers1.shape[0], dim_1*dim_2, dim_1*dim_2), dtype=complex)
-            for i in range(opers1.shape[0]):
-                newOpers1[i, :, :] = np.kron(opers1[i, :, :], E2)
+            for i in range(len(opers1)):
+                newOpers1.append(np.kron(opers1[i], E2))
         output.append(opers1)
         
-    if(opers2.shape[0] != 0):
+    if(len(opers2) != 0):
+        newOpers2 = []
         if(project):
-            newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers2.shape[0]):
-                M = np.kron(E1, opers2[i, :, :])
-                newOpers2[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+            for i in range(len(opers2)):
+                M = np.kron(E1, opers2[i])
+                newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
         
         else:
-            newOpers2 = np.zeros((opers2.shape[0], dim_1*dim_2, dim_1*dim_2), dtype=complex)
-            for i in range(opers2.shape[0]):
-                newOpers2[i, :, :] = np.kron(E1, opers2[i, :, :])
+            for i in range(len(opers2)):
+                newOpers2.append(E1, opers2[i])
         output.append(opers2)
         
     return output
@@ -1025,9 +1023,9 @@ def MixOfThreeSys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
 
 # new
 def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None, q31=None, q13=None, 
-                  opers1=np.asarray([]), 
-                  opers2=np.asarray([]),
-                  opers3=np.asarray([]),
+                  opers1=[], 
+                  opers2=[],
+                  opers3=[],
                   g12=None, 
                   g23=None,
                   g31=None,
@@ -1088,44 +1086,41 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         output.append(purity_info)
         
     # перетягиваем операторы
-    if(opers1.shape[0] != 0):
+    if(len(opers1) != 0):
+        newOpers1 = []
         if(project):
-            newOpers1 = np.zeros((opers1.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers1.shape[0]):
-                M = np.kron(np.kron(opers1[i, :, :], E2), E3)
-                newOpers1[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+            for i in range(len(opers1)):
+                M = kron(opers1[i], E2, E3)
+                newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
             
         else:
-            newOpers1 = np.zeros((opers1.shape[0], dim_1*dim_2*dim_3, dim_1*dim_2*dim_3), dtype=complex)
-            for i in range(opers1.shape[0]):
-                newOpers1[i, :, :] = np.kron(np.kron(opers1[i, :, :], E2), E3)
+            for i in range(len(opers1)):
+                newOpers1.append(kron(opers1[i], E2, E3))
             
         output.append(newOpers1)
     
-    if(opers2.shape[0] != 0):
+    if(len(opers2) != 0):
+        newOpers2 = []
         if(project):
-            newOpers2 = np.zeros((opers2.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers2.shape[0]):
-                M = np.kron(np.kron(E1, opers2[i, :, :]), E3)
-                newOpers2[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+            for i in range(len(opers2)):
+                M = kron(E1, opers2[i], E3)
+                newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
                 
         else: 
-            newOpers2 = np.zeros((opers2.shape[0], dim_1*dim_2*dim_3, dim_1*dim_2*dim_3), dtype=complex)
-            for i in range(opers2.shape[0]):
-                newOpers2[i, :, :] = np.kron(np.kron(E1, opers2[i, :, :]), E3)
+            for i in range(len(opers2)):
+                newOpers2.append(kron(E1, opers2[i], E3))
             
         output.append(newOpers2)
         
-    if(opers3.shape[0] != 0):
+    if(len(opers3) != 0):
+        newOpers3 = []
         if(project):
-            newOpers3 = np.zeros((opers3.shape[0], numOfLvls, numOfLvls), dtype=complex)
-            for i in range(opers3.shape[0]):
-                M = np.kron(np.kron(E1, E2), opers3[i, :, :])
-                newOpers3[i, :, :] = dagger(eigVectors) @ M @ eigVectors
+            for i in range(len(opers3)):
+                M = kron(E1, E2, opers3[i])
+                newOpers3.append(dagger(eigVectors) @ M @ eigVectors)
         else:        
-            newOpers3 = np.zeros((opers3.shape[0], dim_1*dim_2*dim_3, dim_1*dim_2*dim_3), dtype=complex)
-            for i in range(opers3.shape[0]):
-                newOpers3[i, :, :] = np.kron(np.kron(E1, E2), opers3[i, :, :])
+            for i in range(len(opers3)):
+                newOpers3.append(kron(E1, E2, opers3[i]))
             
         output.append(newOpers3)
         
