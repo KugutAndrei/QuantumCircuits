@@ -1061,7 +1061,7 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
     H = H1 + H2 + H3
           
     if(g12 != None):
-        M = kron(q12, q2, E3)
+        M = kron(q12, q21, E3)
         H = H + g12 * M
         
     if(g23 != None):
