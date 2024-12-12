@@ -817,11 +817,14 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=[], opers2=[],
         if(project):
             for i in range(len(opers1)):
                 M = np.kron(opers1[i], E2)
-                newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers1) == 1): newOpers1=dagger(eigVectors) @ M @ eigVectors
+                else: newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
         
         else:
             for i in range(len(opers1)):
-                newOpers1.append(np.kron(opers1[i], E2))
+                if(len(opers1) == 1): newOpers1=dagger(eigVectors) @ M @ eigVectors
+                else: newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
+                    
         output.append(opers1)
         
     if(len(opers2) != 0):
@@ -829,11 +832,13 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=[], opers2=[],
         if(project):
             for i in range(len(opers2)):
                 M = np.kron(E1, opers2[i])
-                newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers2) == 1): newOpers2=dagger(eigVectors) @ M @ eigVectors
+                else: newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
         
         else:
             for i in range(len(opers2)):
-                newOpers2.append(E1, opers2[i])
+                if(len(opers2) == 1): newOpers2=dagger(eigVectors) @ M @ eigVectors
+                else: newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
         output.append(opers2)
         
     return output
@@ -1090,12 +1095,14 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         newOpers1 = []
         if(project):
             for i in range(len(opers1)):
-                M = kron(opers1[i], E2, E3)
-                newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
+                M = tul.kron(opers1[i], E2, E3)
+                if(len(opers1) == 1): newOpers1 = tul.dagger(eigVectors) @ M @ eigVectors
+                else: newOpers1.append(tul.dagger(eigVectors) @ M @ eigVectors)
             
         else:
             for i in range(len(opers1)):
-                newOpers1.append(kron(opers1[i], E2, E3))
+                if(len(opers1) == 1): newOpers1 = tul.dagger(eigVectors) @ M @ eigVectors
+                else: newOpers1.append(tul.dagger(eigVectors) @ M @ eigVectors)
             
         output.append(newOpers1)
     
@@ -1103,12 +1110,14 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         newOpers2 = []
         if(project):
             for i in range(len(opers2)):
-                M = kron(E1, opers2[i], E3)
-                newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
+                M = tul.kron(E1, opers2[i], E3)
+                if(len(opers2) == 1): newOpers2 = tul.dagger(eigVectors) @ M @ eigVectors
+                else: newOpers2.append(tul.dagger(eigVectors) @ M @ eigVectors)
                 
         else: 
             for i in range(len(opers2)):
-                newOpers2.append(kron(E1, opers2[i], E3))
+                if(len(opers2) == 1): newOpers2 = tul.dagger(eigVectors) @ M @ eigVectors
+                else: newOpers2.append(tul.dagger(eigVectors) @ M @ eigVectors)
             
         output.append(newOpers2)
         
@@ -1116,12 +1125,14 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         newOpers3 = []
         if(project):
             for i in range(len(opers3)):
-                M = kron(E1, E2, opers3[i])
-                newOpers3.append(dagger(eigVectors) @ M @ eigVectors)
+                M = tul.kron(E1, E2, opers3[i])
+                if(len(opers3) == 1): newOpers3 = tul.dagger(eigVectors) @ M @ eigVectors
+                else: newOpers3.append(tul.dagger(eigVectors) @ M @ eigVectors)
         else:        
             for i in range(len(opers3)):
-                newOpers3.append(kron(E1, E2, opers3[i]))
-            
+                if(len(opers3) == 1): newOpers3 = tul.dagger(eigVectors) @ M @ eigVectors
+                else: newOpers3.append(tul.dagger(eigVectors) @ M @ eigVectors)
+                    
         output.append(newOpers3)
         
     
