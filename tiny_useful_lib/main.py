@@ -822,8 +822,8 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=[], opers2=[],
         
         else:
             for i in range(len(opers1)):
-                if(len(opers1) == 1): newOpers1=dagger(eigVectors) @ M @ eigVectors
-                else: newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers1) == 1): newOpers1=np.kron(opers1[i], E2)
+                else: newOpers1.append(np.kron(opers1[i], E2))
                     
         output.append(opers1)
         
@@ -837,8 +837,8 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=[], opers2=[],
         
         else:
             for i in range(len(opers2)):
-                if(len(opers2) == 1): newOpers2=dagger(eigVectors) @ M @ eigVectors
-                else: newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers2) == 1): newOpers2=np.kron(E1, opers2[i])
+                else: newOpers2.append(np.kron(E1, opers2[i]))
         output.append(opers2)
         
     return output
@@ -1101,8 +1101,8 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
             
         else:
             for i in range(len(opers1)):
-                if(len(opers1) == 1): newOpers1 = dagger(eigVectors) @ M @ eigVectors
-                else: newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers1) == 1): newOpers1 = kron(opers1[i], E2, E3)
+                else: newOpers1.append(kron(opers1[i], E2, E3))
             
         output.append(newOpers1)
     
@@ -1116,8 +1116,8 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
                 
         else: 
             for i in range(len(opers2)):
-                if(len(opers2) == 1): newOpers2 = dagger(eigVectors) @ M @ eigVectors
-                else: newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers2) == 1): newOpers2 = kron(E1, opers2[i], E3)
+                else: newOpers2.append(kron(E1, opers2[i], E3))
             
         output.append(newOpers2)
         
@@ -1130,8 +1130,8 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
                 else: newOpers3.append(dagger(eigVectors) @ M @ eigVectors)
         else:        
             for i in range(len(opers3)):
-                if(len(opers3) == 1): newOpers3 = dagger(eigVectors) @ M @ eigVectors
-                else: newOpers3.append(dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers3) == 1): newOpers3 = kron(E1, E2, opers3[i])
+                else: newOpers3.append(kron(E1, E2, opers3[i]))
                     
         output.append(newOpers3)
         
