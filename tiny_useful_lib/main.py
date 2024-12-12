@@ -1053,23 +1053,23 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
     H3 = np.diag(spect3)
     
     # объединяем линейные пространства
-    H1 = np.kron(np.kron(H1, E2), E3)
-    H2 = np.kron(np.kron(E1, H2), E3)
-    H3 = np.kron(np.kron(E1, E2), H3)
+    H1 = kron(H1, E2, E3)
+    H2 = kron(E1, H2, E3)
+    H3 = kron(E1, E2, H3)
     
     # полный гамильтониан
     H = H1 + H2 + H3
           
     if(g12 != None):
-        M = np.kron(np.kron(q12, q21), E3)
+        M = kron(q12, q2, E3)
         H = H + g12 * M
         
     if(g23 != None):
-        M = np.kron(np.kron(E1, q23), q32)
+        M = kron(E1, q23, q32)
         H = H + g23 * M
         
     if(g31 != None):
-        M = np.kron(np.kron(q13, E2), q31)
+        M = kron(q13, E2, q31)
         H = H + g31 * M
         
         
@@ -1095,14 +1095,14 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         newOpers1 = []
         if(project):
             for i in range(len(opers1)):
-                M = tul.kron(opers1[i], E2, E3)
-                if(len(opers1) == 1): newOpers1 = tul.dagger(eigVectors) @ M @ eigVectors
-                else: newOpers1.append(tul.dagger(eigVectors) @ M @ eigVectors)
+                M = kron(opers1[i], E2, E3)
+                if(len(opers1) == 1): newOpers1 = dagger(eigVectors) @ M @ eigVectors
+                else: newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
             
         else:
             for i in range(len(opers1)):
-                if(len(opers1) == 1): newOpers1 = tul.dagger(eigVectors) @ M @ eigVectors
-                else: newOpers1.append(tul.dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers1) == 1): newOpers1 = dagger(eigVectors) @ M @ eigVectors
+                else: newOpers1.append(dagger(eigVectors) @ M @ eigVectors)
             
         output.append(newOpers1)
     
@@ -1110,14 +1110,14 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         newOpers2 = []
         if(project):
             for i in range(len(opers2)):
-                M = tul.kron(E1, opers2[i], E3)
-                if(len(opers2) == 1): newOpers2 = tul.dagger(eigVectors) @ M @ eigVectors
-                else: newOpers2.append(tul.dagger(eigVectors) @ M @ eigVectors)
+                M = kron(E1, opers2[i], E3)
+                if(len(opers2) == 1): newOpers2 = dagger(eigVectors) @ M @ eigVectors
+                else: newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
                 
         else: 
             for i in range(len(opers2)):
-                if(len(opers2) == 1): newOpers2 = tul.dagger(eigVectors) @ M @ eigVectors
-                else: newOpers2.append(tul.dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers2) == 1): newOpers2 = dagger(eigVectors) @ M @ eigVectors
+                else: newOpers2.append(dagger(eigVectors) @ M @ eigVectors)
             
         output.append(newOpers2)
         
@@ -1125,13 +1125,13 @@ def mix_three_sys(spect1, spect2, spect3, q12=None, q21=None, q23=None, q32=None
         newOpers3 = []
         if(project):
             for i in range(len(opers3)):
-                M = tul.kron(E1, E2, opers3[i])
-                if(len(opers3) == 1): newOpers3 = tul.dagger(eigVectors) @ M @ eigVectors
-                else: newOpers3.append(tul.dagger(eigVectors) @ M @ eigVectors)
+                M = kron(E1, E2, opers3[i])
+                if(len(opers3) == 1): newOpers3 = dagger(eigVectors) @ M @ eigVectors
+                else: newOpers3.append(dagger(eigVectors) @ M @ eigVectors)
         else:        
             for i in range(len(opers3)):
-                if(len(opers3) == 1): newOpers3 = tul.dagger(eigVectors) @ M @ eigVectors
-                else: newOpers3.append(tul.dagger(eigVectors) @ M @ eigVectors)
+                if(len(opers3) == 1): newOpers3 = dagger(eigVectors) @ M @ eigVectors
+                else: newOpers3.append(dagger(eigVectors) @ M @ eigVectors)
                     
         output.append(newOpers3)
         
