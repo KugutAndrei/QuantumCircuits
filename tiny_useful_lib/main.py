@@ -76,7 +76,7 @@ def kron(*opers):
     
 
 
-def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', 
+def trans_isolation(init_st_list, target_st_list, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', 
                     rounding=3, multiphoton_trigger=1e-6):
 
     # mod 0: search based on k**2/delta, where k = m_tr/m_aim (inspired by three-lvl Rabi), here border=(k**2/delta)_min
@@ -94,15 +94,12 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         mod = 3
         
     # output: leakage_st[0] – init leakage states, leakage_st[1] – target leakage states; leakage_param[0] – k, leakage_param[1] – delta
-    
-    other_st_list = np.asarray(other_st_list)
-    full_st_list = np.zeros((2 + other_st_list.shape[0]), int)
-    full_st_list[0] = init_st
-    full_st_list[1] = target_st
-    full_st_list[2:] = other_st_list
 
-    m_0 = abs(pert_oper[init_st, target_st])
-    f_0 = abs(spectrum[init_st] - spectrum[target_st])
+    full_st_list = init_st_list + target_st_list + other_st_list
+    full_st_list = np.asarray(full_st_list, dtype=int)
+
+    m_0 = abs(pert_oper[init_st_list[0], target_st_list[0]])
+    f_0 = abs(spectrum[init_st_list[0]] - spectrum[target_st_list[0]])
 
     # arrays for output
     leakage_trans = []
@@ -114,26 +111,29 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
     for init in full_st_list:
         for fin in range(spectrum.shape[0]):
 
+            # first filter
             flag = False
-            for st in full_st_list:
-                if(fin == st):
-                    flag = True
-                
-            if(flag):
-                continue
+            for n in range(len(init_st_list)):
+                if(init==init_st_list[n] and fin==target_st_list[n]): flag = True
 
+            for n in range(len(target_st_list)):
+                if(fin==init_st_list[n] and init==target_st_list[n]): flag = True
+                
+            if(flag): continue
+
+
+            # trans params writing down
             m = abs(pert_oper[init, fin])
             k = m/m_0
             delta = abs(abs(spectrum[init] - spectrum[fin]) - f_0)
 
-            if(delta == 0):
-                continue
-
+            # analysis
             if(mod==0 and k**2/delta > border):
-                
+
                 flag = True
                 for trans in leakage_trans: 
                     if(trans[0] == init and trans[1] == fin): flag = False
+                    if(trans[0] == fin and trans[1] == init): flag = False
                 if(flag):
                     leakage_trans.append([init, fin])
                     leakage_k.append(k)
@@ -144,6 +144,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                 flag = True
                 for trans in leakage_trans: 
                     if(trans[0] == init and trans[1] == fin): flag = False
+                    if(trans[0] == fin and trans[1] == init): flag = False
                 if(flag):
                     leakage_trans.append([init, fin])
                     leakage_k.append(k)
@@ -154,6 +155,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                 flag = True
                 for trans in leakage_trans: 
                     if(trans[0] == init and trans[1] == fin): flag = False
+                    if(trans[0] == fin and trans[1] == init): flag = False
                 if(flag):
                     leakage_trans.append([init, fin])
                     leakage_k.append(k)
@@ -170,8 +172,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                         if(virt == st):
                             flag = True
 
-                    if(flag):
-                        continue
+                    if(flag): continue
                         
                     k_multi += abs(pert_oper[init, virt]*pert_oper[virt, fin]/m_0**2\
                     /(spectrum[fin] - 2*spectrum[virt] + spectrum[init]))
@@ -181,6 +182,7 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
                 flag = True
                 for trans in leakage_trans: 
                     if(trans[0] == init and trans[1] == fin): flag = False
+                    if(trans[0] == fin and trans[1] == init): flag = False
                 if(flag):
                     if(k_multi > border[0] and delta < border[1]):
                         leakage_trans.append([init, fin])
@@ -219,16 +221,17 @@ def trans_isolation(init_st, target_st, pert_oper, spectrum, border, other_st_li
         if(mod!=3):
             string_list.append("{0} -> {1} : k={2}, ∆={3}, k**2/∆={4}, k**2/∆**2={5}".format(leakage_st[i, 0], 
                                                                                         leakage_st[i, 1], 
-                                                                                        around(leakage_param[i, 0], rounding), 
-                                                                                        around(leakage_param[i, 1], rounding), 
-                                                                                        around(tmp_1, rounding), 
-                                                                                        around(tmp_2, rounding)))
+                                                                                       around(leakage_param[i, 0], rounding), 
+                                                                                       around(leakage_param[i, 1], rounding), 
+                                                                                       around(tmp_1, rounding), 
+                                                                                       around(tmp_2, rounding)))
         else:
             string_list.append("{0} -> {1} : ∑|k_iv*k_vf/(fr_f-2fr_v)|={2}, ∆={3}".format(leakage_st[i, 0], leakage_st[i, 1], 
                                                                   around(leakage_param[i, 0], rounding), 
                                                                   around(leakage_param[i, 1], rounding)))
     
     return leakage_st, leakage_param, string_list
+
 
 
 def SQUID_flux_finder(Ej1, Ej2, Ej):
