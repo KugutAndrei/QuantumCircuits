@@ -828,7 +828,7 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=[], opers2=[],
                 if(len(opers1) == 1): newOpers1=np.kron(opers1[i], E2)
                 else: newOpers1.append(np.kron(opers1[i], E2))
                     
-        output.append(opers1)
+        output.append(newOpers1)
         
     if(len(opers2) != 0):
         newOpers2 = []
@@ -842,7 +842,7 @@ def mix_two_sys(spect1, spect2, q1, q2, opers1=[], opers2=[],
             for i in range(len(opers2)):
                 if(len(opers2) == 1): newOpers2=np.kron(E1, opers2[i])
                 else: newOpers2.append(np.kron(E1, opers2[i]))
-        output.append(opers2)
+        output.append(newOpers2)
         
     return output
     
