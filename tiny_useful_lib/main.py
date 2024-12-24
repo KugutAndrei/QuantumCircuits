@@ -268,13 +268,18 @@ def index_linear(coord_in, dim_in):
     coord = np.asarray(coord_in)
     dim = np.asarray(dim_in)
 
+    if(np.any(coord >= dim)): 
+        print('DIMENTIONS INCOMPATIBILITY ERROR!!!')
+        return None
+        
     index = 0
     
-    for n in range(coord.shape[0] - 1):
+    for n in range(coord.shape[0]-1): index = (index + coord[n])*dim[n + 1]
 
-        index = (index + coord[n])*dim[n + 1]
-
+    index += coord[-1]
+    
     return index
+
 
 
 def index_coord(index, dim_in):
