@@ -63,6 +63,18 @@ def subspace(M, indices):
     return M[x, y]
     
 
+def expand_space(H, n_exp):
+
+    # expand the space of the matrix by n_exp
+    H_out = np.copy(H)
+    
+    for n in range(n_exp):
+        
+        H_out = np.append(H_out, np.zeros((1, H_out.shape[0])), axis=0)
+        H_out = np.append(H_out, np.zeros((H_out.shape[0], 1)), axis=1)
+    
+    return H_out
+    
 
 def kron(*opers):
 
