@@ -86,6 +86,82 @@ def kron(*opers):
 
     return prod
     
+    
+def side_transitions(init_st_list, target_st_list, 
+                     pert_oper, spectrum, constraint, 
+                     other_st_list=[], mode='one-photon'):
+
+    # constraint – f: (k, delta, init) -> {0, 1}, give a constraint for thr leakages selection
+    # mode – setup a n-photon leakages search (one-photon, two-photon)
+
+
+    full_st_list = init_st_list + target_st_list + other_st_list
+    full_st_list = np.asarray(full_st_list, dtype=int)
+
+    # establishig of the main target transition parameters
+    m_0 = abs(pert_oper[init_st_list[0], target_st_list[0]])
+    f_0 = abs(spectrum[init_st_list[0]] - spectrum[target_st_list[0]])
+
+    # arrays of the leakages parameters
+    leakage_trans = []
+    leakage_k = []
+    leakage_delta = []
+
+
+    # transitions init -> fin
+    for init in full_st_list:
+        for fin in range(spectrum.shape[0]):
+
+            # excluding of the target transitions
+            flag = False
+            for n in range(len(init_st_list)): 
+                if((init==init_st_list[n] or init==target_st_list[n]) and (fin==init_st_list[n] or fin==target_st_list[n])): flag = True
+                    
+            if(flag): continue
+
+            
+            # writing down of the leakage parameters
+            if(mode=='one-photon'):
+                
+                k = abs(pert_oper[init, fin])/m_0
+                delta = abs(abs(spectrum[init] - spectrum[fin]) - f_0)
+                
+            elif(mode=='two-photon'):
+                # calculation of the k analogue for the two-photon leakage
+                k = 0
+                for virt in range(spectrum.shape[0]):
+                    if(virt != init and virt != fin):           
+                        k += abs(pert_oper[init, virt]*pert_oper[virt, fin]/m_0**2\
+                        /(spectrum[fin] - 2*spectrum[virt] + spectrum[init]))
+                    
+                delta = abs(abs(spectrum[init] - spectrum[fin])/2 - f_0)
+                
+  
+            # application of the constraint
+            if(constraint(k, delta, init)):
+
+                # excluding of the repeating leakages
+                flag = True
+                for trans in leakage_trans: 
+                    if(trans[0] == init and trans[1] == fin): flag = False
+                    if(trans[0] == fin and trans[1] == init): flag = False
+
+                # wirting down of the leakage
+                if(flag):
+                    leakage_trans.append([init, fin])
+                    leakage_k.append(k)
+                    leakage_delta.append(delta)
+
+
+    # sorting of the leakages accroding to their delta values
+    sort = np.argsort(np.asarray(leakage_delta))
+    leakage_delta = np.asarray(leakage_delta)[sort]
+    leakage_k = np.asarray(leakage_k)[sort]
+    if(len(leakage_trans) > 0):
+        leakage_trans = np.asarray(leakage_trans)[sort, :]
+    else: leakage_trans = np.asarray(leakage_trans)
+    
+    return leakage_trans, leakage_k, leakage_delta
 
 
 def trans_isolation(init_st_list, target_st_list, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', 
