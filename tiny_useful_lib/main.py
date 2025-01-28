@@ -164,6 +164,67 @@ def side_transitions(init_st_list, target_st_list,
     return leakage_trans, leakage_k, leakage_delta
 
 
+# class for combining a set of many key-arrays
+class keys:
+
+    def __init__(self, *args):
+        # args – pairs (key, next_node) or just (key, None), where next_node is a target of the next embedding
+        
+        self.keys_set = []
+        self.next_nodes = []
+        self.size = 0
+
+        for n in range(len(args)):
+            
+            self.keys_set.append(args[n][0])
+            self.size += args[n][0].ndim
+            
+            if(args[n][1] != None):
+                
+                self.next_nodes.append(args[n][1])
+                self.size -= 1
+            
+        
+    def get(self, str):
+        # str – is a string with a bare state
+
+        # just in case
+        str = str.replace(' ', '')
+        str = str.replace('|', '')
+        str = str.replace('>', '')
+        if(len(str) != self.size): raise TypeError('invalid bare state format')
+
+        # first step
+        car = 0
+        for node in self.next_nodes: car += node
+        loc_keys = self.keys_set[-1]
+        leap = loc_keys.ndim - 1
+        
+        loc_state = []
+        for n in range(loc_keys.ndim): loc_state.append(int(str[car + n]))
+        index = loc_keys[tuple(loc_state)]
+        
+        for n in range(len(self.keys_set) - 1):
+            
+            car -= self.next_nodes[-n-1]
+            loc_keys = self.keys_set[-n-2]
+
+            loc_state = []
+            for k in range(loc_keys.ndim): 
+                if(k < self.next_nodes[-n-1]):
+                    loc_state.append(int(str[car + k]))
+                elif(k == self.next_nodes[-n-1]):
+                    loc_state.append(index)
+                else:
+                    loc_state.append(int(str[car + k + leap]))
+                    
+            leap += self.keys_set[-n-2].ndim - 1
+
+            index = loc_keys[tuple(loc_state)]
+            
+        return index
+    
+
 def trans_isolation(init_st_list, target_st_list, pert_oper, spectrum, border, other_st_list=[], mod='k^2/d', 
                     rounding=3, multiphoton_trigger=1e-6):
 
