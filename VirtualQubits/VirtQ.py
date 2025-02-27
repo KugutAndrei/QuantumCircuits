@@ -252,21 +252,20 @@ class VirtQ:
         elif(ro_flag):
             return tf.transpose(tf.convert_to_tensor(rholist, rho.dtype), (1,0,2,3))
         else:
-            return ro
+            return rho
             
-    def get_superoperator(self, H_basis, basis_list, calc_Phi, progress_bar=False):
-        e, v = np.linalg.eigh(H_basis)
-        v_inv = tf.linalg.inv(v)
-
+    def get_superoperator(self, hilbert_dim, basis, calc_Phi, progress_bar=False):
+        
         superoperator = []
-        for i in tqdm(range(len(basis_list) ** 2)):
-            rho = v[:, basis_list[i % len(basis_list)]][:, tf.newaxis] @ v[:, basis_list[i // len(basis_list)]][tf.newaxis, :]
-            self.initrho = rho
+        for n in tqdm(range(len(basis)**2)):
+            rho = np.zeros((hilbert_dim, hilbert_dim))
+            rho[basis[n%len(basis)], basis[n//len(basis)]] = 1
+            
+            self.initrho = tf.convert_to_tensor(rho, dtype=tf.complex128)
 
-            _, rholist = self.scan_fidelityME(calc_Phi, False, progress_bar)
+            rholist = self.scan_fidelityME(calc_Phi, False, progress_bar)
 
-            rholist = v_inv[tf.newaxis] @ rholist @ tf.linalg.adjoint(v_inv)[tf.newaxis]
-            rholist = rholist.numpy()[:, basis_list][:, :, basis_list]
+            rholist = rholist.numpy()[:, basis][:, :, basis]
             # Some spanish shame
             superoperator_ = []
             for rho in rholist:
