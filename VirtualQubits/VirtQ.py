@@ -219,14 +219,17 @@ class VirtQ:
 
 
 
-    def scan_fidelityME(self, calc_H_as_time_function, rho_flag = False, progress_bar = True):
+    def scan_fidelityME(self, calc_H_as_time_function, rho_flag = False, fid_flag=False,
+                        progress_bar = True):
         self.calc_H_as_time_function = calc_H_as_time_function
 #         if self.initstate.shape[1] != 1:
 #             print('No initial rho if it is supposed to be set via set_initstate')
         rho = tf.tile(self.initrho[tf.newaxis],\
-                      (self.calc_timedepH(calc_H_as_time_function(self.timelist[0]), self.timelist[0]).shape[0], 1, 1))
-        resultFid = []
-        resultFid.append(self.calc_fidelity_rho(rho))
+                   (self.calc_timedepH(calc_H_as_time_function(self.timelist[0]),
+                                       self.timelist[0]).shape[0], 1, 1))
+        if(fid_flag):
+            resultFid = []
+            resultFid.append(self.calc_fidelity_rho(rho))
         if rho_flag:
             rholist = []
             rholist.append(rho)
@@ -241,12 +244,16 @@ class VirtQ:
             resultFid.append(self.calc_fidelity_rho(rho))
             if rho_flag:
                 rholist.append(rho)
-        if rho_flag:
+        if(rho_flag and fid_flag):
             return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2)),\
                    tf.transpose(tf.convert_to_tensor(rholist, rho.dtype), (1,0,2,3))
+        elif(fid_flag):
+            return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2))
+        elif(ro_flag):
+            return tf.transpose(tf.convert_to_tensor(rholist, rho.dtype), (1,0,2,3))
         else:
-            return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2)), rho
-
+            return ro
+            
     def get_superoperator(self, H_basis, basis_list, calc_Phi, progress_bar=False):
         e, v = np.linalg.eigh(H_basis)
         v_inv = tf.linalg.inv(v)
