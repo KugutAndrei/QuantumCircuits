@@ -241,9 +241,8 @@ class VirtQ:
             rho = self.__solveME(rho, self.timelist[i-1], self.timelist[i]-self.timelist[i-1])
 #             if np.abs(tf.linalg.trace(rho)[0]-1)>0.1:
 #                 print('Farewell! Time:', self.timelist[i], tf.linalg.trace(rho))
-            resultFid.append(self.calc_fidelity_rho(rho))
-            if rho_flag:
-                rholist.append(rho)
+            if(fid_flag): resultFid.append(self.calc_fidelity_rho(rho))
+            if(rho_flag): rholist.append(rho)
         if(rho_flag and fid_flag):
             return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2)),\
                    tf.transpose(tf.convert_to_tensor(rholist, rho.dtype), (1,0,2,3))
