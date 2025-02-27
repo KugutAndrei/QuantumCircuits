@@ -241,11 +241,9 @@ class VirtualQubitSystem:
 
 
 
-
     def set_calc_timedepH(self, func):
         self.calc_timedepH = func
 
-    
     
     
     def scan_fidelitySE(self, calc_Phi, psi_flag = False, fid_flag = True, progress_bar = True):
@@ -264,9 +262,10 @@ class VirtualQubitSystem:
         for i in i_range:
             psi = self.__solveSE(psi, self.calc_timedepH(calc_Phi(self.timelist[i-1]), self.timelist[i-1]),\
                                  self.timelist[i]-self.timelist[i-1])
-            resultFid.append(self.calc_fidelity_psi(psi))
-            if psi_flag:
-                psilist.append(psi)
+            
+            if(fid_flag): resultFid.append(self.calc_fidelity_psi(psi))
+            if psi_flag: psilist.append(psi)
+                
         if(psi_flag and fid_flag):
             return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2)),\
                    tf.transpose(tf.convert_to_tensor(psilist, psi.dtype), (1,0,2,3))

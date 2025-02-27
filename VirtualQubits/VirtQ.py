@@ -221,8 +221,8 @@ class VirtQ:
 
     def scan_fidelityME(self, calc_H_as_time_function, rho_flag = False, progress_bar = True):
         self.calc_H_as_time_function = calc_H_as_time_function
-        if self.initstate.shape[1] != 1:
-            print('No initial rho if it is supposed to be set via set_initstate')
+#         if self.initstate.shape[1] != 1:
+#             print('No initial rho if it is supposed to be set via set_initstate')
         rho = tf.tile(self.initrho[tf.newaxis],\
                       (self.calc_timedepH(calc_H_as_time_function(self.timelist[0]), self.timelist[0]).shape[0], 1, 1))
         resultFid = []
@@ -253,8 +253,7 @@ class VirtQ:
 
         superoperator = []
         for i in tqdm(range(len(basis_list) ** 2)):
-            rho = v[:, basis_list[i % len(basis_list)]][:, tf.newaxis] @ v[:, basis_list[i // len(basis_list)]][
-                                                                         tf.newaxis, :]
+            rho = v[:, basis_list[i % len(basis_list)]][:, tf.newaxis] @ v[:, basis_list[i // len(basis_list)]][tf.newaxis, :]
             self.initrho = rho
 
             _, rholist = self.scan_fidelityME(calc_Phi, False, progress_bar)
