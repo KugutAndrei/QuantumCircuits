@@ -220,7 +220,7 @@ class VirtQ:
 
 
     def scan_fidelityME(self, calc_H_as_time_function, rho_flag = False, fid_flag=False,
-                        progress_bar = True):
+                        progress_bar = False):
         self.calc_H_as_time_function = calc_H_as_time_function
 #         if self.initstate.shape[1] != 1:
 #             print('No initial rho if it is supposed to be set via set_initstate')
@@ -248,7 +248,7 @@ class VirtQ:
                    tf.transpose(tf.convert_to_tensor(rholist, rho.dtype), (1,0,2,3))
         elif(fid_flag):
             return tf.transpose(tf.math.abs(tf.convert_to_tensor(resultFid)), (1,0,2))
-        elif(ro_flag):
+        elif(rho_flag):
             return tf.transpose(tf.convert_to_tensor(rholist, rho.dtype), (1,0,2,3))
         else:
             return rho
@@ -262,7 +262,8 @@ class VirtQ:
             
             self.initrho = tf.convert_to_tensor(rho, dtype=tf.complex128)
 
-            rholist = self.scan_fidelityME(calc_Phi, False, progress_bar)
+            rholist = self.scan_fidelityME(calc_Phi, 
+                                           progress_bar=progress_bar)
 
             rholist = rholist.numpy()[:, basis][:, :, basis]
             # Some spanish shame
