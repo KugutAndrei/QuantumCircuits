@@ -256,6 +256,7 @@ class VirtQ:
     def get_superoperator(self, hilbert_dim, basis, calc_Phi, progress_bar=False):
         
         superoperator = []
+        
         for n in tqdm(range(len(basis)**2)):
             rho = np.zeros((hilbert_dim, hilbert_dim))
             rho[basis[n%len(basis)], basis[n//len(basis)]] = 1
@@ -266,12 +267,19 @@ class VirtQ:
                                            progress_bar=progress_bar)
 
             rholist = rholist.numpy()[:, basis][:, :, basis]
-            # Some spanish shame
-            superoperator_ = []
-            for rho in rholist:
-                superoperator_.append(np.ravel(rho.T))
-            superoperator.append(np.asarray(superoperator_))
-        return np.transpose(np.asarray(superoperator), (1, 0, 2))
+#             # Some spanish shame
+#             superoperator_ = []
+#             for rho in rholist:
+#                 superoperator_.append(np.ravel(rho.T))
+#             superoperator.append(np.asarray(superoperator_))
+            rholist = rholist.reshape((rholist.shape[0], 
+                                       rholist.shape[1], 
+                                       len(basis) ** 2), 
+                                      order='F')
+            superoperator.append(rholist)
+        
+        return np.stack(propagator, axis=2)
+#         return np.transpose(np.asarray(superoperator), (1, 0, 2))
     
     
     
