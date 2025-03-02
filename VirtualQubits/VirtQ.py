@@ -265,9 +265,11 @@ class VirtQ:
 
             rholist = self.scan_fidelityME(calc_Phi, 
                                            progress_bar=progress_bar)
-            rholist.shape
+            print(rholist.shape)
             
             rholist = rholist.numpy()[:, basis][:, :, basis]
+            
+            print(rholist.shape)
 #             # Some spanish shame
 #             superoperator_ = []
 #             for rho in rholist:
