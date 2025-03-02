@@ -265,11 +265,9 @@ class VirtQ:
 
             rholist = self.scan_fidelityME(calc_Phi, 
                                            progress_bar=progress_bar)
-            print(rholist.shape)
             
-            rholist = rholist.numpy()[:, basis][:, :, basis]
-            
-            print(rholist.shape)
+            rholist = rholist.numpy()[:, basis, :][:, :, basis]
+
 #             # Some spanish shame
 #             superoperator_ = []
 #             for rho in rholist:
@@ -295,17 +293,16 @@ class VirtQ:
             
             rho = U@rho@np.conjugate(U.T)
             
-            rho = rho[:, basis][:, :, basis]
+            rho = rho[basis, :][:, basis]
 #             # Some spanish shame
 #             superoperator_ = []
 #             for rho in rholist:
 #                 superoperator_.append(np.ravel(rho.T))
 #             superoperator.append(np.asarray(superoperator_))
-            rholist = rholist.reshape((len(basis) ** 2), 
-                                      order='F')
+            rho = rho.reshape((len(basis) ** 2), order='F')
             superoperator.append(rholist)
         
-        return np.stack(propagator, axis=0)
+        return np.stack(superoperator, axis=0)
 #         return np.transpose(np.asarray(superoperator), (1, 0, 2))
     
     
