@@ -265,7 +265,8 @@ class VirtQ:
 
             rholist = self.scan_fidelityME(calc_Phi, 
                                            progress_bar=progress_bar)
-
+            rholist.shape
+            
             rholist = rholist.numpy()[:, basis][:, :, basis]
 #             # Some spanish shame
 #             superoperator_ = []
@@ -277,9 +278,33 @@ class VirtQ:
                                       order='F')
             superoperator.append(rholist)
         
-        return np.stack(propagator, axis=1)
+        return np.stack(superoperator, axis=1)
 #         return np.transpose(np.asarray(superoperator), (1, 0, 2))
     
+    
+    def unitary2superoperator(self, U, basis=None):
+        
+        if(basis==None): basis=list(range(0, U.shape[0]))
+        superoperator = []
+        
+        for n in tqdm(range(len(basis)**2)):
+            rho = np.zeros((hilbert_dim, hilbert_dim))
+            rho[basis[n%len(basis)], basis[n//len(basis)]] = 1
+            
+            rho = U@rho@np.conjugate(U.T)
+            
+            rho = rho[:, basis][:, :, basis]
+#             # Some spanish shame
+#             superoperator_ = []
+#             for rho in rholist:
+#                 superoperator_.append(np.ravel(rho.T))
+#             superoperator.append(np.asarray(superoperator_))
+            rholist = rholist.reshape((len(basis) ** 2), 
+                                      order='F')
+            superoperator.append(rholist)
+        
+        return np.stack(propagator, axis=0)
+#         return np.transpose(np.asarray(superoperator), (1, 0, 2))
     
     
     
