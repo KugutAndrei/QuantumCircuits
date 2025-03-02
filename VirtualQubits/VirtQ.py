@@ -273,12 +273,11 @@ class VirtQ:
 #                 superoperator_.append(np.ravel(rho.T))
 #             superoperator.append(np.asarray(superoperator_))
             rholist = rholist.reshape((rholist.shape[0], 
-                                       rholist.shape[1], 
                                        len(basis) ** 2), 
                                       order='F')
             superoperator.append(rholist)
         
-        return np.stack(propagator, axis=2)
+        return np.stack(propagator, axis=1)
 #         return np.transpose(np.asarray(superoperator), (1, 0, 2))
     
     
