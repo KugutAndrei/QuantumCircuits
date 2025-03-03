@@ -151,7 +151,7 @@ def unitary2superoperator(U, basis=None):
     superoperator = []
 
     for n in range(len(basis)**2):
-        rho = np.zeros((hilbert_dim, hilbert_dim))
+        rho = np.zeros(U.shape)
         rho[basis[n%len(basis)], basis[n//len(basis)]] = 1
 
         rho = U@rho@np.conjugate(U.T)
