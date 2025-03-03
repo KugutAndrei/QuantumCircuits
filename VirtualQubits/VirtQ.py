@@ -257,12 +257,17 @@ class VirtQ:
         
         superoperator = []
         
-        for n in tqdm(range(len(basis)**2)):
+        if progress_bar:
+            n_range = tqdm(range(len(basis)**2))
+        else:
+            n_range = range(len(basis)**2)
+        
+        for n in n_range:
             rho = np.zeros((hilbert_dim, hilbert_dim))
             rho[basis[n%len(basis)], basis[n//len(basis)]] = 1   
             self.initrho = tf.convert_to_tensor(rho, dtype=tf.complex128)
             
-            rholist = self.scan_fidelityME(calc_Phi, progress_bar=progress_bar)
+            rholist = self.scan_fidelityME(calc_Phi, progress_bar=False)
             
             rholist = rholist.numpy()[:, basis, :][:, :, basis]
             rholist = rholist.reshape((rholist.shape[0], 
