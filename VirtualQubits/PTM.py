@@ -145,7 +145,7 @@ def superoperator2PTM(superoperator):
     return PTM
 
 
-def unitary2superoperator(self, U, basis=None):
+def unitary2superoperator(U, basis=None):
 
     if(basis==None): basis=list(range(0, U.shape[0]))
     superoperator = []
