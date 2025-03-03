@@ -145,7 +145,24 @@ def superoperator2PTM(superoperator):
     return PTM
 
 
+def unitary2superoperator(self, U, basis=None):
+
+    if(basis==None): basis=list(range(0, U.shape[0]))
+    superoperator = []
+
+    for n in tqdm(range(len(basis)**2)):
+        rho = np.zeros((hilbert_dim, hilbert_dim))
+        rho[basis[n%len(basis)], basis[n//len(basis)]] = 1
+
+        rho = U@rho@np.conjugate(U.T)
+
+        rho = rho[basis, :][:, basis]
+        rho = rho.reshape((len(basis) ** 2), order='F')
+        superoperator.append(rho)
+
+    return np.stack(superoperator, axis=0)
         
+    
 def to_Pauli_T_matrix_sp(O):
     '''
     Convert "unitatary" matrix O to Pauli Transfer Matrix
