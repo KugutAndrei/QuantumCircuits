@@ -150,7 +150,7 @@ def unitary2superoperator(U, basis=None):
     if(basis==None): basis=list(range(0, U.shape[0]))
     superoperator = []
 
-    for n in tqdm(range(len(basis)**2)):
+    for n in range(len(basis)**2):
         rho = np.zeros((hilbert_dim, hilbert_dim))
         rho[basis[n%len(basis)], basis[n//len(basis)]] = 1
 
