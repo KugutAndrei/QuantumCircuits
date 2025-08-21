@@ -135,7 +135,7 @@ class VirtQ:
         if solver == 'RK4':
             self.calc_H_as_time_function = calc_H_as_time_function
         psi = torch.tile(self.initstate[None],\
-                      (self.calc_timedepH(calc_H_as_time_function(self.timelist[0])[:, :, None, None], self.timelist[0]).shape[0], 1, 1))
+                      (self.calc_timedepH(calc_H_as_time_function(self.timelist[0])[:, :], self.timelist[0]).shape[0], 1, 1))
         if fid_flag:
             resultFid = []
             resultFid.append(self.calc_fidelity_psi(psi))
@@ -148,7 +148,7 @@ class VirtQ:
             i_range = range(1, self.timelist.shape[0])
         for i in i_range:
             if solver == 'expm':
-                psi = self.__solveSE_expm(psi, self.calc_timedepH(calc_H_as_time_function(self.timelist[i-1])[:, :, None, None], self.timelist[i-1]),\
+                psi = self.__solveSE_expm(psi, self.calc_timedepH(calc_H_as_time_function(self.timelist[i-1])[:, :], self.timelist[i-1]),\
                                      self.timelist[i]-self.timelist[i-1])
             elif solver == 'RK4':
                 psi = self.__solveSE_RK4(psi, self.timelist[i], self.timelist[i] - self.timelist[i - 1])
@@ -173,7 +173,7 @@ class VirtQ:
                         progress_bar = False):
         self.calc_H_as_time_function = calc_H_as_time_function
         rho = torch.tile(self.initrho[None],\
-                   (self.calc_timedepH(calc_H_as_time_function(self.timelist[0])[:, :, None, None],
+                   (self.calc_timedepH(calc_H_as_time_function(self.timelist[0])[:, :],
                                        self.timelist[0]).shape[0], 1, 1))
         if(fid_flag):
             resultFid = []
@@ -222,6 +222,4 @@ class VirtQ:
             superoperator.append(rholist)
         
         return np.stack(superoperator, axis=1)
-    
-    
     
