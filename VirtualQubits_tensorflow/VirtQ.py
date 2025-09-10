@@ -145,7 +145,7 @@ class VirtQ:
     
     
     def set_Lindblad_operators(self, Lindblad_operators):
-        self.Lindblad_operators = Lindblad_operators
+        self.Lindblad_operators = tf.constant(Lindblad_operators, dtype=tf.complex128)
 
 
     def __Lindblad(self, rho, t):
@@ -268,7 +268,6 @@ class VirtQ:
             self.initrho = tf.convert_to_tensor(rho, dtype=tf.complex128)
             
             rholist = self.scan_fidelityME(calc_Phi, progress_bar=False)
-            
             rholist = rholist[:, basis, :][:, :, basis]
             rholist = rholist.reshape((rholist.shape[0], 
                                        len(basis) ** 2), 

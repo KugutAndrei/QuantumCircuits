@@ -93,12 +93,13 @@ class VirtQ:
     
     def set_Lindblad_operators(self, Lindblad_operators):
         
-        for i in range(len(Lindblad_operators)): Lindblad_operators[i] = self.from_numpy(Lindblad_operators[i])   
-        self.Lindblad_operators = Lindblad_operators
+        Lindblad_operators_torch = []
+        for c in Lindblad_operators: Lindblad_operators_torch.append(self.from_numpy(c))
+        self.Lindblad_operators = Lindblad_operators_torch
 
 
     def __Lindblad(self, rho, t):
-        H = self.from_numpy(self.calc_timedepH(self.calc_H_as_time_function(t)[:, :, None, None], t))
+        H = self.from_numpy(self.calc_timedepH(self.calc_H_as_time_function(t), t))
         res = -1j*(H@rho - rho@H)
         for c in self.Lindblad_operators:
             
@@ -173,7 +174,7 @@ class VirtQ:
                         progress_bar = False):
         self.calc_H_as_time_function = calc_H_as_time_function
         rho = torch.tile(self.initrho[None],\
-                   (self.calc_timedepH(calc_H_as_time_function(self.timelist[0])[:, :],
+                   (self.calc_timedepH(calc_H_as_time_function(self.timelist[0]),
                                        self.timelist[0]).shape[0], 1, 1))
         if(fid_flag):
             resultFid = []
@@ -214,7 +215,6 @@ class VirtQ:
             self.initrho = self.from_numpy(rho)
             
             rholist = self.scan_fidelityME(calc_Phi, progress_bar=False)
-            
             rholist = (rholist.to('cpu')).numpy()[:, basis, :][:, :, basis]
             rholist = rholist.reshape((rholist.shape[0], 
                                        len(basis) ** 2), 
@@ -222,4 +222,6 @@ class VirtQ:
             superoperator.append(rholist)
         
         return np.stack(superoperator, axis=1)
+    
+    
     
